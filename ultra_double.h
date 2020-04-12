@@ -1,4 +1,4 @@
-// ultra_precision.h
+// ultra_double.h
 // Header file for UltraDouble
 //
 // Author  : Jinwook Lee
@@ -7,10 +7,11 @@
 // Last update  : April 12, 2020
 //
 
-#ifndef ULTRA_PRECISION_H
-#define ULTRA_PRECISION_H
+#ifndef ULTRA_DOUBLE_H
+#define ULTRA_DOUBLE_H
 
 #include <string>
+#include <vector>
 #include <cmath>
 
 // Number and arithmetic operation
@@ -23,7 +24,7 @@ class UltraDouble
 		// UltraDouble operator+(UltraDouble, UltraDouble);
 	private:
 		int precisionFactor;
-		vector<double> udv; // Ultra precision value represented as double vector
+		std::vector<double> udv; // Ultra precision value represented as double vector
 };
 
 #endif // End of include guard

@@ -10,6 +10,11 @@
 #ifndef ULTRA_DOUBLE_H
 #include "ultra_double.h"
 #endif
+
+#ifndef COMMAND_H
+#include "Command.h"
+#endif
+
 #ifndef CALCULATOR_H
 #define CALCULATOR_H
 
@@ -18,6 +23,7 @@
 #include <string>
 #include <cmath>
 #include <vector>
+#include <deque>
 
 class Calculator
 {
@@ -30,15 +36,19 @@ class Calculator
 		bool ReadCommand(); // cmdCurrent is updated
 
 		// Parsing command line and execute command
-		bool ExecuteCommand(); // Execute current command and update cmdHistory and ansHistory
+		int ExecuteCommand(); // Execute current command and update cmdHistory and ansHistory
 
-		void Wait(int waitMilliseconds=10)
+		// Display current status
+		int DisplayStatus();
+
+		int Wait(int waitMilliseconds = 10);
 
 	private:
-		deque<unique_ptr<Command>>     cmdHistory; // Command history
-		deque<unique_ptr<UltraDouble>> ansHistory; // Answer history
+		std::deque<Command>     cmdHistory; // Command history
+		//std::deque<UltraDouble> ansHistory; // Answer history
+		std::deque<double> ansHistory; // Answer history
 
-		Command     cmdCurrent; // Current command 
+		Command cmdCurrent; // Current command 
 		UltraDouble ansCurrent; // Current answer
 
 		int precisionFactor; // Amplification factor for significant digit beyond double precision
@@ -46,16 +56,5 @@ class Calculator
 
 	friend class UltraDouble; //
 };
-
-class Command // Command is accumulated during build up
-{	
-	public:
-		Command();
-		~Command(){}
-
-	private:
-		vector<Char> cmdVector;
-}
-
 
 #endif // End of include guard

@@ -14,20 +14,24 @@
 #include "calculator.h"
 #endif
 
-#include <chrono>
-#include <thread>
+#include <iostream>
+#include <thread>         // std::this_thread::sleep_for
+#include <chrono>         // std::chrono::seconds
 #include <string>
 #include <cmath>
 #include <vector>
-using namespace std;
+#include <deque>
+#include <memory>
 
 // Calculator implementations
-Calculator::Calculator(int pFacotr, nHistory):
+Calculator::Calculator(int pFactor, int nHistory):
 	precisionFactor(pFactor),
 	sizeHistory(nHistory)
 {
-	deque<unique_ptr<Command>>     cmdHistory(sizeHistory) = {new Command    };
-	deque<unique_ptr<UltraDouble>> ansHistory(sizeHistory) = {new UltraDouble};
+	//deque<Command>     cmdHistory(sizeHistory);
+	//deque<UltraDouble> ansHistory(sizeHistory);
+	std::deque<std::string> cmdHistory(sizeHistory);
+	std::deque<double> ansHistory(sizeHistory);
 }
 
 // Calculator::ReadCommand() 
@@ -37,53 +41,49 @@ bool Calculator::ReadCommand()
 {
 
 	// Reading command lines
-	String str{""};
-	cout << "Enter command [EXIT to exit]: \n";
-	getline(cin, str);
-	cmdCurrent(str);
+	std::string str{""};
+	std::cout << "Enter command [EXIT to exit]: \n";
+	std::getline(std::cin, str);
+	Command cmdCurrent(str);
 
 	// Update cmd history
 	cmdHistory.push_back(cmdCurrent);
 	cmdHistory.pop_front();
 
 	// Return if completed
-	if str.find("EXIT") != string::npos
+	if (str.find("EXIT") != std::string::npos)
 		return true; // Completed
 	return false;  // Not completed
 }
 
-Calculator::ExecuteCommand()
+int Calculator::ExecuteCommand()
 {
 	// Compute new answer
-	UltraDouble ansCurrent(Calculator::precisionFactor);
+	//UltraDouble ansCurrent(Calculator::precisionFactor);
+	double ansCurrent = 0;
 	
 	// Update ans history
 	ansHistory.push_back(ansCurrent);
 	ansHistory.pop_front();
+
+	return 0;
 }
 
-Calculator::Display()
+int Calculator::DisplayStatus()
 {
 	system("CLS");
 	for (int i=0; i!=Calculator::sizeHistory; ++i)
 	{
-		cout << "CMD: " << cmdHistory[i] << endl;
-		cout << "ANS: " << ansHistory[i] << endl;
-		cout << endl;
+		//std::cout << "CMD: " << cmdHistory[i] << std::endl;
+		std::cout << "ANS: " << ansHistory[i] << std::endl;
+		std::cout << std::endl;
 	}
+	return 0;
 }
 
-Calculator::Wait(int waitMilliseconds)
+int Calculator::Wait(int waitMilliseconds)
 {
-	std::this_thread::sleep_for(std::chrno:miliseconds(waitMilliseconds);
-}
-
-// Command implementations
-Command::Command(){}
-Command::Command(const String & str)
-{
-	cmdVector.resize(str.size());
-	for (int i=0; i!=String.size(); ++i)
-		cmdInputElement[i] = str[i];
+	std::this_thread::sleep_for(std::chrono::milliseconds(waitMilliseconds));
+	return 0;
 }
 

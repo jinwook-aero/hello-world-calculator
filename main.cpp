@@ -9,7 +9,7 @@
 
 #include <iostream>
 #include "calculator.h"
-#include "ultra_precision.h"
+#include "ultra_double.h"
 using namespace std;
 
 int main()

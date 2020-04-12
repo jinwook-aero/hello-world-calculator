@@ -1,4 +1,4 @@
-// ultra_precision.cpp
+// ultra_double.cpp
 // Source file for UltraDouble
 //
 // Author  : Jinwook Lee
@@ -7,15 +7,18 @@
 // Last update  : April 12, 2020
 //
 
-#ifndef ULTRA_PRECISION_H
-#include "ultra_precision.h"
+#ifndef ULTRA_DOUBLE_H
+#include "ultra_double.h"
 #endif
 
 #include <string>
 #include <cmath>
 
-UltraDouble::UltraDouble(int pFactor=1):
+UltraDouble::UltraDouble(int pFactor):
 	precisionFactor{pFactor}
 {
+	// Initialize with all zeros
 	udv.resize(precisionFactor);
+	for (int i = 0; i != udv.size(); ++i)
+		udv[i] = 0.0;
 }
