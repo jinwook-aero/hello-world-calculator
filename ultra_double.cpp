@@ -18,7 +18,16 @@ UltraDouble::UltraDouble(int pFactor):
 	precisionFactor{pFactor}
 {
 	// Initialize with all zeros
+	udv.clear();
 	udv.resize(precisionFactor);
 	for (int i = 0; i != udv.size(); ++i)
 		udv[i] = 0.0;
+}
+
+UltraDouble::operator const char* ()
+{
+	udv_str.clear();
+	for (int i = 0; i != udv.size(); ++i)
+		udv_str += std::to_string(udv[i]);
+	return udv_str.c_str();
 }

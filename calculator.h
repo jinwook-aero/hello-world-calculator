@@ -45,16 +45,13 @@ class Calculator
 
 	private:
 		std::deque<Command>     cmdHistory; // Command history
-		//std::deque<UltraDouble> ansHistory; // Answer history
-		std::deque<double> ansHistory; // Answer history
+		std::deque<UltraDouble> ansHistory; // Answer history
 
 		Command cmdCurrent; // Current command 
 		UltraDouble ansCurrent; // Current answer
 
 		int precisionFactor; // Amplification factor for significant digit beyond double precision
 		int sizeHistory; // Size of history to be recorded
-
-	friend class UltraDouble; //
 };
 
 #endif // End of include guard

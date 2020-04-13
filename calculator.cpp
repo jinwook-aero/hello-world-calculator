@@ -28,10 +28,10 @@ Calculator::Calculator(int pFactor, int nHistory):
 	precisionFactor(pFactor),
 	sizeHistory(nHistory)
 {
-	//deque<Command>     cmdHistory(sizeHistory);
-	//deque<UltraDouble> ansHistory(sizeHistory);
-	std::deque<std::string> cmdHistory(sizeHistory);
-	std::deque<double> ansHistory(sizeHistory);
+	cmdHistory.clear();
+	ansHistory.clear();
+	cmdHistory.resize(sizeHistory,Command());
+	ansHistory.resize(sizeHistory,UltraDouble(precisionFactor));
 }
 
 // Calculator::ReadCommand() 
@@ -59,8 +59,7 @@ bool Calculator::ReadCommand()
 int Calculator::ExecuteCommand()
 {
 	// Compute new answer
-	//UltraDouble ansCurrent(Calculator::precisionFactor);
-	double ansCurrent = 0;
+	UltraDouble ansCurrent(precisionFactor);
 	
 	// Update ans history
 	ansHistory.push_back(ansCurrent);
@@ -74,7 +73,7 @@ int Calculator::DisplayStatus()
 	system("CLS");
 	for (int i=0; i!=Calculator::sizeHistory; ++i)
 	{
-		//std::cout << "CMD: " << cmdHistory[i] << std::endl;
+		std::cout << "CMD: " << cmdHistory[i] << std::endl;
 		std::cout << "ANS: " << ansHistory[i] << std::endl;
 		std::cout << std::endl;
 	}

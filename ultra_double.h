@@ -19,12 +19,17 @@
 class UltraDouble
 {
 	public:
-		UltraDouble(int pFactor=1);
+		UltraDouble(){}
+		UltraDouble(int pFactor);
 		~UltraDouble(){}
 		// UltraDouble operator+(UltraDouble, UltraDouble);
+
+		// Conversion operator for display
+		operator const char* ();
 	private:
 		int precisionFactor;
 		std::vector<double> udv; // Ultra precision value represented as double vector
+		std::string udv_str; // Ultra precision value in string for display
 };
 
 #endif // End of include guard

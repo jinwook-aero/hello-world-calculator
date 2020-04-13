@@ -38,12 +38,12 @@ void Command::Pop_back()
 	cmdVector.pop_back();
 }
 
-Command::operator const char*()
+Command::operator const char* ()
 {
-	std::string tempStr;
-	for (int i=0; i!=cmdVector.size(); ++i)
-		tempStr += cmdVector[i];
-	return tempStr.c_str();
+	cmdVector_all.clear();
+	for (int i = 0; i != cmdVector.size(); ++i)
+		cmdVector_all += cmdVector[i];
+	return cmdVector_all.c_str();
 }
 
 

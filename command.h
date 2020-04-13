@@ -34,6 +34,7 @@ class Command
 	private:
 		// All data is cmdVector
 		std::vector<std::string> cmdVector;
+		std::string cmdVector_all;
 };
 
 #endif

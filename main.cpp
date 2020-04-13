@@ -30,7 +30,7 @@ int main()
 
 	// Run calculator
 	bool isCompleted = false;
-	while(isCompleted)
+	while(!isCompleted)
 	{
 		isCompleted = theCalc.ReadCommand();
 		theCalc.ExecuteCommand();
