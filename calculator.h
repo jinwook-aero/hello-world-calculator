@@ -25,6 +25,9 @@
 #include <vector>
 #include <deque>
 
+enum class INPUT_CMD_TYPE { EXIT = 0, CLEAR, ALL_CLEAR, EXECUTE, UNDETERMINED, NUMBER, OPERATOR };
+enum class INPUT_OPR_TYPE { PLUS = 0, MINUS, MULTIPLY, DIVIDE };
+
 class Calculator
 {
 	public:
@@ -33,7 +36,7 @@ class Calculator
 		~Calculator(){} 
 
 		// Input accumulation
-		bool ReadCommand(); // cmdCurrent is updated
+		INPUT_CMD_TYPE ReadCommand(); // cmdCurrent is updated
 
 		// Parsing command line and execute command
 		int ExecuteCommand(); // Execute current command and update cmdHistory and ansHistory

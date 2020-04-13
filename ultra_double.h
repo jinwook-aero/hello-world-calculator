@@ -19,7 +19,7 @@
 class UltraDouble
 {
 	public:
-		UltraDouble(){}
+		UltraDouble();
 		UltraDouble(int pFactor);
 		~UltraDouble(){}
 		// UltraDouble operator+(UltraDouble, UltraDouble);
@@ -28,6 +28,7 @@ class UltraDouble
 		operator const char* ();
 	private:
 		int precisionFactor;
+		bool validityFlag; // Validity of current object
 		std::vector<double> udv; // Ultra precision value represented as double vector
 		std::string udv_str; // Ultra precision value in string for display
 };

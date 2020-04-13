@@ -11,6 +11,11 @@
 #include "Command.h"
 #endif
 
+#ifndef CALCULATOR_H
+#include "calculator.h"
+#endif
+
+
 // Command implementations
 Command::Command()
 {
@@ -42,7 +47,10 @@ Command::operator const char* ()
 {
 	cmdVector_all.clear();
 	for (int i = 0; i != cmdVector.size(); ++i)
+	{
+		cmdVector_all += " "; // white space
 		cmdVector_all += cmdVector[i];
+	}
 	return cmdVector_all.c_str();
 }
 
