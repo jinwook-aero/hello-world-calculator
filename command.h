@@ -27,6 +27,7 @@ class Command
 		void Append(const std::string &);
 		void Clear();
 		void Pop_back();
+		std::string ToString();
 
 		// Conversion operator for display
 		operator const char*();

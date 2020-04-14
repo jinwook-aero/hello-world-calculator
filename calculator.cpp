@@ -4,7 +4,7 @@
 // Author  : Jinwook Lee
 // Reviewer: Sungwook Lee
 // First version: April 11, 2020
-// Last update  : April 12, 2020
+// Last update  : April 13, 2020
 //
 
 #ifndef ULTRA_DOUBLE_H
@@ -22,8 +22,10 @@
 #include <vector>
 #include <deque>
 #include <memory>
+#include <algorithm> // std::max_element
 
-// Calculator implementations
+// Calculator constructor
+// clear and properly size cmdHistory and ansHistory
 Calculator::Calculator(int pFactor, int nHistory):
 	precisionFactor(pFactor),
 	sizeHistory(nHistory)
@@ -32,7 +34,7 @@ Calculator::Calculator(int pFactor, int nHistory):
 	ansHistory.clear(); ansHistory.resize(sizeHistory,UltraDouble());
 }
 
-// Calculator::ReadCommand() 
+// INPUT_CMD_TYPE Calculator::ReadCommand()
 // updates cmdCurrent and cmdHistory
 // returns isCompleted
 INPUT_CMD_TYPE Calculator::ReadCommand()
@@ -40,22 +42,22 @@ INPUT_CMD_TYPE Calculator::ReadCommand()
 
 	// Reading command lines
 	std::cout << "Build command line " << std::endl;
-	std::cout << "Special action commdands: EXIT, EXECUTE, CLEAR, ALL_CLEAR" << std::endl;
-	std::cout << "Operation commdands: PLUS, MINUS, MULTIPLY, DIVIDE" << std::endl;
+	std::cout << "Special action commdands: EXIT, EXECUTE, CLEAR, ALL_CLEAR, BACKSPACE" << std::endl;
+	std::cout << "Operation commdands: (, ), +, -, *, /" << std::endl;
 	std::cout << std::endl;
 
 	// Accumulating single input to cmdCurrent
 	// untile EXIT or EXECUTE is entered
 	// CLEAR or ALL_CLEAR performs local action
 	std::string tempStr{""};
-	Command cmdCurrent; // Empty command object
+	cmdCurrent.Clear(); // Clear current command object
 	INPUT_CMD_TYPE input_cmd_type = INPUT_CMD_TYPE::UNDETERMINED;
 	while ( (input_cmd_type != INPUT_CMD_TYPE::EXECUTE) &&
 		    (input_cmd_type != INPUT_CMD_TYPE::EXIT) )
 	{
 		// Read single input
 		tempStr.clear();
-		std::cout << "Single input (number, action command, operator): ";
+		std::cout << "Single input (number, action cmd, operator cmd): ";
 		std::getline(std::cin,tempStr);
 		if (tempStr == "EXIT")
 		{
@@ -75,9 +77,15 @@ INPUT_CMD_TYPE Calculator::ReadCommand()
 		else if (tempStr == "ALL_CLEAR")
 		{
 			input_cmd_type = INPUT_CMD_TYPE::ALL_CLEAR;
-			// NOTE: without .clear(), cmdHistory can still hold previous data
+			// NOTE: without .clear(), cmdHistory still holds previous data
+			// To Sungwook: Figure out why and fix this issue such that .clear() does not need to be invoked
 			cmdHistory.clear(); cmdHistory.resize(sizeHistory, Command()); // Clear and reinitialize command history
 			ansHistory.clear(); ansHistory.resize(sizeHistory, UltraDouble()); // Clear and reinitialize  answer history			
+		}
+		else if (tempStr == "BACKSPACE")
+		{
+			input_cmd_type = INPUT_CMD_TYPE::BACKSPACE;
+			cmdCurrent.Pop_back(); // Delete the most recent command element
 		}
 		else // NUMBER or OPERATOR, temporarilly assigned with UNDETERMINED
 			input_cmd_type = INPUT_CMD_TYPE::UNDETERMINED;
@@ -87,7 +95,7 @@ INPUT_CMD_TYPE Calculator::ReadCommand()
 			cmdCurrent.Append(tempStr);
 	}
 
-	// Update cmdHistory and pop the old history data
+	// Update cmdHistory and pop the oldest history data
 	cmdHistory.push_back(cmdCurrent);
 	cmdHistory.pop_front();
 
@@ -95,20 +103,77 @@ INPUT_CMD_TYPE Calculator::ReadCommand()
 	return input_cmd_type;
 }
 
+// int Calculator::ExecuteCommand()
+// cmdCurrent.ToString() is decoded character by character
+// Each valid character is categorized to operator or number
+// Each valid character is allocated with precedence number (the higher the more important)
+// Calculation is unrolled from maximum precedence
 int Calculator::ExecuteCommand()
 {
-	// Parsing command line
+	// Identify operators and numbers
+	std::string cmdStr = cmdCurrent.ToString();
+	std::vector<INPUT_CMD_TYPE> cmdTypeVec;	
+	std::vector<char> cmdCompact;
 
-	// Compute new answer
+	int cmdTypeCount = 0;
+	bool isValid = true;
+	for (unsigned cmdStrIndex= 0 ; cmdStrIndex != cmdStr.length(); ++cmdStrIndex)
+	{
+		// Identify operators
+		isValid = true; // Assume valid
+		if (cmdStr.at(cmdStrIndex) == '(')
+			cmdTypeVec.push_back(INPUT_CMD_TYPE::OPEN_BRACKET);
+		else if (cmdStr.at(cmdStrIndex) == ')')
+			cmdTypeVec.push_back(INPUT_CMD_TYPE::CLOSE_BRACKET);
+		else if (cmdStr.at(cmdStrIndex) == '+')
+			cmdTypeVec.push_back(INPUT_CMD_TYPE::PLUS);
+		else if (cmdStr.at(cmdStrIndex) == '-')
+			cmdTypeVec.push_back(INPUT_CMD_TYPE::MINUS);
+		else if (cmdStr.at(cmdStrIndex) == '*')
+			cmdTypeVec.push_back(INPUT_CMD_TYPE::MULTIPLY);
+		else if (cmdStr.at(cmdStrIndex) == '/')
+			cmdTypeVec.push_back(INPUT_CMD_TYPE::DIVIDE);
+		else if ((cmdStr.at(cmdStrIndex) == '.') ||
+			 (cmdStr.at(cmdStrIndex) == '0') ||
+			 (cmdStr.at(cmdStrIndex) == '1') ||
+			 (cmdStr.at(cmdStrIndex) == '2') ||
+			 (cmdStr.at(cmdStrIndex) == '3') ||
+			 (cmdStr.at(cmdStrIndex) == '4') ||
+			 (cmdStr.at(cmdStrIndex) == '5') ||
+			 (cmdStr.at(cmdStrIndex) == '6') ||
+			 (cmdStr.at(cmdStrIndex) == '7') ||
+			 (cmdStr.at(cmdStrIndex) == '8') ||
+			 (cmdStr.at(cmdStrIndex) == '9'))
+			cmdTypeVec.push_back(INPUT_CMD_TYPE::NUMBER);
+		else
+			isValid = false; // This is not valid character
+
+		// Append to cmdCompact only for valid character
+		if (isValid)
+			cmdCompact.push_back(cmdStr.at(cmdStrIndex));
+	}
+
+	// Do nothing and return if insufficient input
+	if (cmdCompact.size() == 0)
+		return 0;
+
+	// Allocate precedence
+	// Each cmdCompact character is allocated with precedence number
+	// High priority has higher precedence number
+	std::vector<unsigned int> cmdCompactPrecedence(cmdCompact.size(),0);
+	unsigned int maxPrecedence = *std::max_element(cmdCompactPrecedence.cbegin(), cmdCompactPrecedence.cend());
+
+	// Compute new answer by unrolling operations from max precedence
 	UltraDouble ansCurrent(precisionFactor);
 	
-	// Update ans history
+	// Update ans history and return
 	ansHistory.push_back(ansCurrent);
 	ansHistory.pop_front();
-
 	return 0;
 }
 
+// int Calculator::DisplayStatus()
+// Clears current display and shows the updated list of cmd and ans history
 int Calculator::DisplayStatus()
 {
 	system("CLS");
@@ -121,6 +186,8 @@ int Calculator::DisplayStatus()
 	return 0;
 }
 
+// int Calculator::Wait(int waitMilliseconds)
+// Wait for the given miliseconds to alleviate burden on CPU
 int Calculator::Wait(int waitMilliseconds)
 {
 	std::this_thread::sleep_for(std::chrono::milliseconds(waitMilliseconds));

@@ -43,14 +43,20 @@ void Command::Pop_back()
 	cmdVector.pop_back();
 }
 
-Command::operator const char* ()
+std::string Command::ToString()
 {
 	cmdVector_all.clear();
 	for (int i = 0; i != cmdVector.size(); ++i)
 	{
-		cmdVector_all += " "; // white space
+		cmdVector_all += " ";
 		cmdVector_all += cmdVector[i];
 	}
+	return cmdVector_all;
+}
+
+Command::operator const char* ()
+{
+	ToString(); // This updates (std::string cmdVector_all)
 	return cmdVector_all.c_str();
 }
 
