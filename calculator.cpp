@@ -106,61 +106,109 @@ INPUT_CMD_TYPE Calculator::ReadCommand()
 // int Calculator::ExecuteCommand()
 // cmdCurrent.ToString() is decoded character by character
 // Each valid character is categorized to operator or number
-// Each valid character is allocated with precedence number (the higher the more important)
-// Calculation is unrolled from maximum precedence
+// Each valid character is allocated with precedence number
+// Calculation is unrolled from zero precedence  (lower precedence number computed earlier)
 int Calculator::ExecuteCommand()
 {
 	// Identify operators and numbers
 	std::string cmdStr = cmdCurrent.ToString();
 	std::vector<INPUT_CMD_TYPE> cmdTypeVec;	
-	std::vector<char> cmdCompact;
+	std::vector<char> cmdCharVec;
 
-	int cmdTypeCount = 0;
+	int cmdTypeCount{0};
 	bool isValid = true;
-	for (unsigned cmdStrIndex= 0 ; cmdStrIndex != cmdStr.length(); ++cmdStrIndex)
+	for (unsigned strIndex = 0 ; strIndex != cmdStr.length(); ++strIndex)
 	{
 		// Identify operators
 		isValid = true; // Assume valid
-		if (cmdStr.at(cmdStrIndex) == '(')
+		if (cmdStr.at(strIndex) == '(')
 			cmdTypeVec.push_back(INPUT_CMD_TYPE::OPEN_BRACKET);
-		else if (cmdStr.at(cmdStrIndex) == ')')
+		else if (cmdStr.at(strIndex) == ')')
 			cmdTypeVec.push_back(INPUT_CMD_TYPE::CLOSE_BRACKET);
-		else if (cmdStr.at(cmdStrIndex) == '+')
+		else if (cmdStr.at(strIndex) == '+')
 			cmdTypeVec.push_back(INPUT_CMD_TYPE::PLUS);
-		else if (cmdStr.at(cmdStrIndex) == '-')
+		else if (cmdStr.at(strIndex) == '-')
 			cmdTypeVec.push_back(INPUT_CMD_TYPE::MINUS);
-		else if (cmdStr.at(cmdStrIndex) == '*')
+		else if (cmdStr.at(strIndex) == '*')
 			cmdTypeVec.push_back(INPUT_CMD_TYPE::MULTIPLY);
-		else if (cmdStr.at(cmdStrIndex) == '/')
+		else if (cmdStr.at(strIndex) == '/')
 			cmdTypeVec.push_back(INPUT_CMD_TYPE::DIVIDE);
-		else if ((cmdStr.at(cmdStrIndex) == '.') ||
-			 (cmdStr.at(cmdStrIndex) == '0') ||
-			 (cmdStr.at(cmdStrIndex) == '1') ||
-			 (cmdStr.at(cmdStrIndex) == '2') ||
-			 (cmdStr.at(cmdStrIndex) == '3') ||
-			 (cmdStr.at(cmdStrIndex) == '4') ||
-			 (cmdStr.at(cmdStrIndex) == '5') ||
-			 (cmdStr.at(cmdStrIndex) == '6') ||
-			 (cmdStr.at(cmdStrIndex) == '7') ||
-			 (cmdStr.at(cmdStrIndex) == '8') ||
-			 (cmdStr.at(cmdStrIndex) == '9'))
+		else if ((cmdStr.at(strIndex) == '.') ||
+			 (cmdStr.at(strIndex) == '0') ||
+			 (cmdStr.at(strIndex) == '1') ||
+			 (cmdStr.at(strIndex) == '2') ||
+			 (cmdStr.at(strIndex) == '3') ||
+			 (cmdStr.at(strIndex) == '4') ||
+			 (cmdStr.at(strIndex) == '5') ||
+			 (cmdStr.at(strIndex) == '6') ||
+			 (cmdStr.at(strIndex) == '7') ||
+			 (cmdStr.at(strIndex) == '8') ||
+			 (cmdStr.at(strIndex) == '9'))
 			cmdTypeVec.push_back(INPUT_CMD_TYPE::NUMBER);
 		else
 			isValid = false; // This is not valid character
 
-		// Append to cmdCompact only for valid character
+		// Append to cmdCharVec only for valid character
 		if (isValid)
-			cmdCompact.push_back(cmdStr.at(cmdStrIndex));
+			cmdCharVec.push_back(cmdStr.at(strIndex));
 	}
 
 	// Do nothing and return if insufficient input
-	if (cmdCompact.size() == 0)
+	if (cmdCharVec.size() == 0)
 		return 0;
 
+	// Bracket group is first determined before allocating precedence number
+	// Example command: 1 + ( 2 + ( 4 + 5 ) ) + 6
+	// Bracket group  : 0 0 - 1 1 - 2 2 2 - - 0 0
+	int currentBracketGroup{0};
+	std::vector<int> bracketGroupVec(cmdTypeVec.size(),currentBracketGroup);
+	for (unsigned int vecIndex = 0; vecIndex != cmdTypeVec.size(); ++vecIndex)
+	{
+		if (cmdTypeVec.at(vecIndex) == INPUT_CMD_TYPE::OPEN_BRACKET)
+		{
+			++currentBracketGroup;
+			unsigned int bracket2close{0};
+			for (unsigned int vecIndex2 = vecIndex; vecIndex2 != cmdTypeVec.size(); ++vecIndex2)
+			{
+				if (cmdTypeVec.at(vecIndex2) == INPUT_CMD_TYPE::OPEN_BRACKET)
+				{
+					++bracket2close;
+					bracketGroupVec.at(vecIndex2) = -1;
+				}
+				else if (cmdTypeVec.at(vecIndex2) == INPUT_CMD_TYPE::CLOSE_BRACKET)
+				{
+					--bracket2close;
+					bracketGroupVec.at(vecIndex2) = -1;
+				}
+				else
+					bracketGroupVec.at(vecIndex2) = currentBracketGroup;
+				
+				if (!bracket2close)
+					break;
+			}
+		}
+			
+	}
+	unsigned int maxBracketGroup = *std::max_element(bracketGroupVec.cbegin(), bracketGroupVec.cend());
+
+	// Bracket group debug
+	for (std::vector<char>::const_iterator vecIndex = cmdCharVec.cbegin() ; vecIndex != cmdCharVec.cend(); ++vecIndex)
+		std::cout << *vecIndex << " ";
+	std::cout << std::endl;
+
+	for (std::vector<int>::const_iterator vecIndex = bracketGroupVec.cbegin() ; vecIndex != bracketGroupVec.cend(); ++vecIndex)
+	{
+		if (*vecIndex < 0)
+			std::cout << "-" << " ";
+		else
+			std::cout << *vecIndex << " ";
+	}
+	std::cout << std::endl;
+
 	// Allocate precedence
-	// Each cmdCompact character is allocated with precedence number
-	// High priority has higher precedence number
-	std::vector<unsigned int> cmdCompactPrecedence(cmdCompact.size(),0);
+	// Each cmdCharVec character is allocated with precedence number
+	// Lower precedence number is computed earlier
+	std::vector<unsigned int> cmdCompactPrecedence(cmdCharVec.size(),0); 
 	unsigned int maxPrecedence = *std::max_element(cmdCompactPrecedence.cbegin(), cmdCompactPrecedence.cend());
 
 	// Compute new answer by unrolling operations from max precedence

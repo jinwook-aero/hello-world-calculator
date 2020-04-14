@@ -49,7 +49,7 @@ std::string Command::ToString()
 	for (int i = 0; i != cmdVector.size(); ++i)
 	{
 		cmdVector_all += " ";
-		cmdVector_all += cmdVector[i];
+		cmdVector_all += cmdVector.at(i);
 	}
 	return cmdVector_all;
 }
