@@ -7,13 +7,8 @@
 // Last update  : April 13, 2020
 //
 
-#ifndef ULTRA_DOUBLE_H
 #include "ultra_double.h"
-#endif
-#ifndef CALCULATOR_H
 #include "calculator.h"
-#endif
-
 #include <iostream>
 #include <thread>         // std::this_thread::sleep_for
 #include <chrono>         // std::chrono::seconds

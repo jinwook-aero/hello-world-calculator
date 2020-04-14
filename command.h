@@ -7,8 +7,7 @@
 // Last update  : April 12, 2020
 //
 
-#ifndef COMMAND_H
-#define COMMAND_H
+#pragma once
 #include <string>
 #include <vector>
 
@@ -37,5 +36,3 @@ class Command
 		std::vector<std::string> cmdVector;
 		std::string cmdVector_all;
 };
-
-#endif

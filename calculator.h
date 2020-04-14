@@ -7,17 +7,9 @@
 // Last update  : April 12, 2020
 //
 
-#ifndef ULTRA_DOUBLE_H
+#pragma once
 #include "ultra_double.h"
-#endif
-
-#ifndef COMMAND_H
 #include "Command.h"
-#endif
-
-#ifndef CALCULATOR_H
-#define CALCULATOR_H
-
 #include <chrono>
 #include <thread>
 #include <string>
@@ -60,5 +52,3 @@ class Calculator
 		int precisionFactor; // Amplification factor for significant digit beyond double precision
 		int sizeHistory; // Size of history to be recorded
 };
-
-#endif // End of include guard

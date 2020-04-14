@@ -7,12 +7,7 @@
 // Last update  : April 12, 2020
 //
 
-#ifndef ULTRA_DOUBLE_H
 #include "ultra_double.h"
-#endif
-
-#include <string>
-#include <cmath>
 
 // Default constructor is invalid value
 UltraDouble::UltraDouble():

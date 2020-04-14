@@ -7,14 +7,8 @@
 // Last update  : April 12, 2020
 //
 
-#ifndef COMMAND_H
 #include "Command.h"
-#endif
-
-#ifndef CALCULATOR_H
 #include "calculator.h"
-#endif
-
 
 // Command implementations
 Command::Command()

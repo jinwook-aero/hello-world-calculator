@@ -7,12 +7,9 @@
 // Last update  : April 12, 2020
 //
 
-#ifndef ULTRA_DOUBLE_H
-#define ULTRA_DOUBLE_H
-
+#pragma once
 #include <string>
 #include <vector>
-#include <cmath>
 
 // Number and arithmetic operation
 // Precision is directly read from calculator object
@@ -26,12 +23,10 @@ class UltraDouble
 
 		// Conversion operator for display
 		operator const char* ();
+
 	private:
 		int precisionFactor;
 		bool validityFlag; // Validity of current object
 		std::vector<double> udv; // Ultra precision value represented as double vector
 		std::string udv_str; // Ultra precision value in string for display
 };
-
-#endif // End of include guard
-
