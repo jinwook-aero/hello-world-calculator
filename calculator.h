@@ -23,29 +23,29 @@ enum class INPUT_CMD_TYPE { ZERO = 0, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, E
 
 class Calculator
 {
-	public:
-		// Constructor and destructor
-		Calculator(int pFactor=1, int nHistory=10); // Precision factor is set at construction
-		~Calculator() = default;
+public:
+	// Constructor and destructor
+	Calculator(int pFactor=1, int nHistory=10); // Precision factor is set at construction
+	~Calculator() = default;
 
-		// Input accumulation
-		INPUT_CMD_TYPE ReadCommand(); // cmdCurrent is updated
+	// Input accumulation
+	INPUT_CMD_TYPE ReadCommand(); // cmdCurrent is updated
 
-		// Parsing command line and execute command
-		int ExecuteCommand(); // Execute current command and update cmdHistory and ansHistory
+	// Parsing command line and execute command
+	int ExecuteCommand(); // Execute current command and update cmdHistory and ansHistory
 
-		// Display current status
-		int DisplayStatus();
+	// Display current status
+	int DisplayStatus();
 
-		int Wait(int waitMilliseconds = 10);
+	int Wait(int waitMilliseconds = 10);
 
-	private:
-		std::deque<Command>     cmdHistory; // Command history
-		std::deque<UltraDouble> ansHistory; // Answer history
+private:
+	std::deque<Command>     cmdHistory; // Command history
+	std::deque<UltraDouble> ansHistory; // Answer history
 
-		Command cmdCurrent; // Current command 
-		UltraDouble ansCurrent; // Current answer
+	Command cmdCurrent; // Current command 
+	UltraDouble ansCurrent; // Current answer
 
-		int precisionFactor; // Amplification factor for significant digit beyond double precision
-		int sizeHistory; // Size of history to be recorded
+	int precisionFactor; // Amplification factor for significant digit beyond double precision
+	int sizeHistory; // Size of history to be recorded
 };

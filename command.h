@@ -16,21 +16,21 @@
 // cmdVector is accumulated during build up
 class Command 
 {
-	public:
-		Command();
-		Command(const std::string& str); // Constructor with starting point
-		~Command() = default;
+public:
+	Command();
+	Command(const std::string& str); // Constructor with starting point
+	~Command() = default;
 
-		void Append(const std::string &str);
-		void Clear();
-		void Pop_back();
-		std::string ToString();
+	void Append(const std::string &str);
+	void Clear();
+	void Pop_back();
+	std::string ToString();
 
-		// Conversion operator for display
-		operator const char*();
+	// Conversion operator for display
+	operator const char*();
 
-	private:
-		// All data is cmdVector
-		std::vector<std::string> cmdVector;
-		std::string cmdVector_all;
+private:
+	// All data is cmdVector
+	std::vector<std::string> cmdVector;
+	std::string cmdVector_all;
 };
