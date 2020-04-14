@@ -7,15 +7,11 @@
 // Last update  : April 13, 2020
 //
 
-#include "ultra_double.h"
 #include "calculator.h"
 #include <iostream>
 #include <thread>         // std::this_thread::sleep_for
 #include <chrono>         // std::chrono::seconds
-#include <string>
 #include <cmath>
-#include <vector>
-#include <deque>
 #include <memory>
 #include <algorithm> // std::max_element
 

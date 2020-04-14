@@ -17,13 +17,11 @@
 class Command 
 {
 	public:
-		// Constructor and destructors
-		Command(); // Empty constructor
-		Command(const std::string&); // Constructor with starting point
-		~Command() {}
+		Command();
+		Command(const std::string& str); // Constructor with starting point
+		~Command() = default;
 
-		// Member functions
-		void Append(const std::string &);
+		void Append(const std::string &str);
 		void Clear();
 		void Pop_back();
 		std::string ToString();

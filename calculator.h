@@ -12,10 +12,7 @@
 #include "Command.h"
 #include <chrono>
 #include <thread>
-#include <string>
-#include <cmath>
-#include <vector>
-#include <deque>
+#include <queue>
 
 enum class INPUT_CMD_TYPE { ZERO = 0, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE,
 				DOT = 10, NUMBER,
@@ -29,7 +26,7 @@ class Calculator
 	public:
 		// Constructor and destructor
 		Calculator(int pFactor=1, int nHistory=10); // Precision factor is set at construction
-		~Calculator(){} 
+		~Calculator() = default;
 
 		// Input accumulation
 		INPUT_CMD_TYPE ReadCommand(); // cmdCurrent is updated

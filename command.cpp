@@ -8,7 +8,6 @@
 //
 
 #include "Command.h"
-#include "calculator.h"
 
 // Command implementations
 Command::Command()
