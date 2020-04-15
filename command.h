@@ -8,6 +8,7 @@
 //
 
 #pragma once
+#include <iostream>
 #include <string>
 #include <vector>
 #include <type_traits>
@@ -23,7 +24,14 @@ public:
 	void Clear()				{ std::vector<T>::clear();			}
 	void Pop_back()				{ std::vector<T>::pop_back();		}
 
-	std::string ToString();
+	template <typename U = T> // Case with string
+	typename std::enable_if_t<std::is_same_v<U, std::string>, std::string> ToString();
+
+	template <typename U = T> // Case with possible string conversion
+	typename std::enable_if_t<(std::is_arithmetic_v<U> && !std::is_same_v<U, std::string>), std::string> ToString();
+
+	template <typename U = T> // Case with impossible string conversion
+	typename std::enable_if_t<!(std::is_arithmetic_v<U> || std::is_same_v<U, std::string>), std::string> ToString();
 
 	// Conversion operator for display
 	operator const char*();
@@ -32,8 +40,27 @@ private:
 	std::string commandStrList_;
 };
 
-template <typename T> 
-typename std::enable_if_t<std::is_arithmetic_v<T>, std::string>
+// Case with string
+template <typename T>
+template <typename U = T>
+typename std::enable_if_t<std::is_same_v<U, std::string>, std::string>
+CommandBase<T>::ToString()
+{
+	commandStrList_.clear();
+
+	for (auto iter = std::vector<T>::begin(); iter != std::vector<T>::end(); iter++)
+	{
+		commandStrList_ += *iter;
+		commandStrList_ += " ";
+	}
+
+	return commandStrList_;
+}
+
+// Case with possible string conversion
+template <typename T>
+template <typename U = T>
+typename std::enable_if_t<(std::is_arithmetic_v<U> && !std::is_same_v<U, std::string>), std::string>
 CommandBase<T>::ToString()
 {
 	commandStrList_.clear();
@@ -47,8 +74,11 @@ CommandBase<T>::ToString()
 	return commandStrList_;
 }
 
+// Case with impossible string conversion
 template <typename T>
-std::string CommandBase<T>::ToString()
+template <typename U = T>
+typename std::enable_if_t<!(std::is_arithmetic_v<U> || std::is_same_v<U, std::string>), std::string>
+CommandBase<T>::ToString()
 {
 	commandStrList_.clear();
 	commandStrList_ = std::string("can not convert ") + typeid(T).name() + std::string(" type to string");
