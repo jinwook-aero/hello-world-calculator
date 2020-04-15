@@ -10,27 +10,66 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <type_traits>
 
-// Command is vector of strings
-// Each string can be number, digit, operator, or execution command
-// cmdVector is accumulated during build up
-class Command 
+template <typename T>
+class CommandBase : protected std::vector<T>
 {
 public:
-	Command();
-	Command(const std::string& str); // Constructor with starting point
-	~Command() = default;
+	CommandBase() = default;
+	CommandBase(const T& val)	{ std::vector<T>::push_back(val);	}
+	
+	void Append(const T& val)	{ std::vector<T>::push_back(val);	}
+	void Clear()				{ std::vector<T>::clear();			}
+	void Pop_back()				{ std::vector<T>::pop_back();		}
 
-	void Append(const std::string &str);
-	void Clear();
-	void Pop_back();
 	std::string ToString();
 
 	// Conversion operator for display
 	operator const char*();
 
 private:
-	// All data is cmdVector
-	std::vector<std::string> cmdVector;
-	std::string cmdVector_all;
+	std::string commandStrList_;
 };
+
+template <typename T> 
+typename std::enable_if_t<std::is_arithmetic_v<T>, std::string>
+CommandBase<T>::ToString()
+{
+	commandStrList_.clear();
+
+	for (auto iter = std::vector<T>::begin(); iter != std::vector<T>::end(); iter++) 
+	{
+		commandStrList_ += std::to_string(*iter);
+		commandStrList_ += " ";
+	}
+
+	return commandStrList_;
+}
+
+template <typename T>
+std::string CommandBase<T>::ToString()
+{
+	commandStrList_.clear();
+	commandStrList_ = std::string("can not convert ") + typeid(T).name() + std::string(" type to string");
+	return commandStrList_;
+}
+
+template <typename T>
+CommandBase<T>::operator const char* ()
+{
+	ToString(); // This updates (std::string cmdVector_all)
+	return commandStrList_.c_str();
+}
+
+
+// Command is vector of strings
+// Each string can be number, digit, operator, or execution command
+// cmdVector is accumulated during build up
+class Command : public CommandBase<std::string> {};
+
+// sungwook new command
+class SungwookCommand : public CommandBase<int> {};
+
+// gomdori command (2 Dimensional Array)
+class GomdoriCommand : public CommandBase<std::vector<int>> {};
