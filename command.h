@@ -24,48 +24,24 @@ public:
 	void Clear()				{ std::vector<T>::clear();			}
 	void Pop_back()				{ std::vector<T>::pop_back();		}
 
-	template <typename U = T> // Case with string
-	typename std::enable_if_t<std::is_same_v<U, std::string>, std::string> ToString();
-
-	template <typename U = T> // Case with possible string conversion
-	typename std::enable_if_t<(std::is_arithmetic_v<U> && !std::is_same_v<U, std::string>), std::string> ToString();
-
-	template <typename U = T> // Case with impossible string conversion
-	typename std::enable_if_t<!(std::is_arithmetic_v<U> || std::is_same_v<U, std::string>), std::string> ToString();
+	std::string ToString()		{ return ToString(std::is_arithmetic<T>()); }
 
 	// Conversion operator for display
 	operator const char*();
 
 private:
+	std::string ToString(std::true_type);
+	std::string	ToString(std::false_type);
+
 	std::string commandStrList_;
 };
 
-// Case with string
-template <typename T>
-template <typename U = T>
-typename std::enable_if_t<std::is_same_v<U, std::string>, std::string>
-CommandBase<T>::ToString()
+template <typename T> // is_arithmetic
+std::string CommandBase<T>::ToString(std::true_type)
 {
 	commandStrList_.clear();
 
 	for (auto iter = std::vector<T>::begin(); iter != std::vector<T>::end(); iter++)
-	{
-		commandStrList_ += *iter;
-		commandStrList_ += " ";
-	}
-
-	return commandStrList_;
-}
-
-// Case with possible string conversion
-template <typename T>
-template <typename U = T>
-typename std::enable_if_t<(std::is_arithmetic_v<U> && !std::is_same_v<U, std::string>), std::string>
-CommandBase<T>::ToString()
-{
-	commandStrList_.clear();
-
-	for (auto iter = std::vector<T>::begin(); iter != std::vector<T>::end(); iter++) 
 	{
 		commandStrList_ += std::to_string(*iter);
 		commandStrList_ += " ";
@@ -74,14 +50,12 @@ CommandBase<T>::ToString()
 	return commandStrList_;
 }
 
-// Case with impossible string conversion
-template <typename T>
-template <typename U = T>
-typename std::enable_if_t<!(std::is_arithmetic_v<U> || std::is_same_v<U, std::string>), std::string>
-CommandBase<T>::ToString()
+template <typename T> // !is_arithmetic
+std::string CommandBase<T>::ToString(std::false_type)
 {
 	commandStrList_.clear();
 	commandStrList_ = std::string("can not convert ") + typeid(T).name() + std::string(" type to string");
+
 	return commandStrList_;
 }
 
