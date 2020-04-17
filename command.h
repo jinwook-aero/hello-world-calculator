@@ -8,10 +8,7 @@
 //
 
 #pragma once
-#include <iostream>
-#include <string>
-#include <vector>
-#include <type_traits>
+#include "utils.h"
 
 template <typename T>
 class CommandBase : protected std::vector<T>
@@ -24,46 +21,27 @@ public:
 	void Clear()				{ std::vector<T>::clear();			}
 	void Pop_back()				{ std::vector<T>::pop_back();		}
 
-	std::string ToString()		{ return ToString(std::is_arithmetic<T>()); }
+	std::string ToString();
 
 	// Conversion operator for display
-	operator const char*();
+	operator const char*()		{ return ToString().c_str(); }
 
 private:
-	std::string ToString(std::true_type);
-	std::string	ToString(std::false_type);
-
 	std::string commandStrList_;
 };
 
-template <typename T> // is_arithmetic
-std::string CommandBase<T>::ToString(std::true_type)
+template <typename T>
+std::string CommandBase<T>::ToString()
 {
 	commandStrList_.clear();
 
 	for (auto iter = std::vector<T>::begin(); iter != std::vector<T>::end(); iter++)
 	{
-		commandStrList_ += std::to_string(*iter);
+		commandStrList_ += StringConverter<T>::GetInstance()->ToString(*iter);
 		commandStrList_ += " ";
 	}
 
 	return commandStrList_;
-}
-
-template <typename T> // !is_arithmetic
-std::string CommandBase<T>::ToString(std::false_type)
-{
-	commandStrList_.clear();
-	commandStrList_ = std::string("can not convert ") + typeid(T).name() + std::string(" type to string");
-
-	return commandStrList_;
-}
-
-template <typename T>
-CommandBase<T>::operator const char* ()
-{
-	ToString(); // This updates (std::string cmdVector_all)
-	return commandStrList_.c_str();
 }
 
 
