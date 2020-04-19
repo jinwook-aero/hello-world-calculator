@@ -24,17 +24,38 @@ public:
 	void Clear()				{ std::vector<T>::clear();			}
 	void Pop_back()				{ std::vector<T>::pop_back();		}
 
-	std::string ToString()		{ return ToString(std::is_arithmetic<T>()); }
+	std::string ToString() 
+	{ 
+		if (std::is_same_v<T, std::string>)
+			return ToString_alreadyString();
+		else
+			return ToString(std::is_arithmetic<T>());
+	}
 
 	// Conversion operator for display
 	operator const char*();
 
 private:
-	std::string ToString(std::true_type);
-	std::string	ToString(std::false_type);
+	std::string ToString_alreadyString();  // Already string
+	std::string ToString(std::true_type);  // Can be converted
+	std::string	ToString(std::false_type); // Cannot be converted
 
 	std::string commandStrList_;
 };
+
+template <typename T> // already string
+std::string CommandBase<T>::ToString_alreadyString()
+{
+	commandStrList_.clear();
+
+	for (auto iter = std::vector<T>::begin(); iter != std::vector<T>::end(); iter++)
+	{
+		commandStrList_ += *iter;
+		commandStrList_ += " ";
+	}
+
+	return commandStrList_;
+}
 
 template <typename T> // is_arithmetic
 std::string CommandBase<T>::ToString(std::true_type)
@@ -43,7 +64,7 @@ std::string CommandBase<T>::ToString(std::true_type)
 
 	for (auto iter = std::vector<T>::begin(); iter != std::vector<T>::end(); iter++)
 	{
-		commandStrList_ += std::to_string(*iter);
+		commandStrList_ += std::to_string(*iter); // std::to_string cannot be called on string
 		commandStrList_ += " ";
 	}
 
