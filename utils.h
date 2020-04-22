@@ -1,10 +1,14 @@
 #pragma once
 #include "macro.h"
+#include "ultra_double.h"
 #include <list>
 #include <vector>
 #include <string>
 #include <iostream>
 #include <type_traits>
+
+bool IsArithmeticSign(const char  c);
+bool IsArithmeticSign(const char *c);
 
 /*
 	std::is_string이 없어서 직접 만들어 봄
@@ -21,11 +25,11 @@ constexpr bool is_string_v = is_string<T>::value;
 /*
 	해당 타입에 ToString()이라는 함수가 존재하는지 확인
  */
-template<typename T, typename NotUsed = void>
+template <typename T, typename NotUsed = void>
 struct has_ToString
 	: std::false_type {};
 
-template<typename T>
+template <typename T>
 struct has_ToString<T, std::void_t<decltype(std::declval<T>().ToString())>>
 	: std::true_type {};
 
@@ -36,12 +40,12 @@ constexpr bool has_ToString_v = has_ToString<T>::value;
 	vector나 list같이 for문으로 순회 할 수 있는 타입인지 확인
 	size(), begin(), end() 함수가 있으면 순회 가능한 것으로 판단
  */
-template<typename T, typename NotUsed = void>
-struct is_iterateAble 
+template <typename T, typename NotUsed = void>
+struct is_iterateAble
 	: std::false_type {};
 
-template<typename T>
-struct is_iterateAble<T, std::void_t<decltype(std::declval<T>().size()), decltype(std::declval<T>().begin()), decltype(std::declval<T>().end())>> 
+template <typename T>
+struct is_iterateAble<T, std::void_t<decltype(std::declval<T>().size()), decltype(std::declval<T>().begin()), decltype(std::declval<T>().end())>>
 	: std::true_type {};
 
 template <typename T>
@@ -51,9 +55,9 @@ constexpr bool is_iterateAble_v = is_iterateAble<T>::value;
 	T 타입 변수를 std::string으로 만들어 주는 싱글턴 클래스
 */
 template <typename T>
-class StringConverter
+class ToStringConverter
 {
-	THIS_CLASS_IS_SINGLETON(StringConverter)
+	THIS_CLASS_IS_SINGLETON(ToStringConverter)
 
 public:
 	std::string& ToString(std::string& str) { return str; }
@@ -63,8 +67,8 @@ private:
 	std::string ToString_iterate(const T& val);
 };
 
-template<typename T>
-std::string StringConverter<T>::ToString(const T& val)
+template <typename T>
+std::string ToStringConverter<T>::ToString(const T& val)
 {
 	if constexpr (std::is_arithmetic_v<T>)
 		return std::to_string(val);
@@ -79,8 +83,8 @@ std::string StringConverter<T>::ToString(const T& val)
 /*
 	val 값을 순회 하면서 하나씩 변환
 */
-template<typename T>
-std::string StringConverter<T>::ToString_iterate(const T & val)
+template <typename T>
+std::string ToStringConverter<T>::ToString_iterate(const T & val)
 {
 	std::string ret, delimiter;
 
@@ -91,6 +95,45 @@ std::string StringConverter<T>::ToString_iterate(const T & val)
 
 		delimiter = ", ";
 	}
-		
+
 	return ret;
 }
+
+/*
+	std::string 변수를 T 타입으로 만들어 주는 싱글턴 클래스
+*/
+template <typename T>
+class FromStringConverter
+{
+	THIS_CLASS_IS_SINGLETON(FromStringConverter)
+
+public:
+	T FromString(const std::string& str) { return T(str); }
+};
+
+template <>
+class FromStringConverter<int>
+{
+	THIS_CLASS_IS_SINGLETON(FromStringConverter)
+
+public:
+	int FromString(const std::string& str) { return atoi(str.c_str()); }
+};
+
+template <>
+class FromStringConverter<double>
+{
+	THIS_CLASS_IS_SINGLETON(FromStringConverter)
+
+public:
+	double FromString(const std::string& str) { return atof(str.c_str()); }
+};
+
+template <>
+class FromStringConverter<long long>
+{
+	THIS_CLASS_IS_SINGLETON(FromStringConverter)
+
+public:
+	long long FromString(const std::string& str) { return atoll(str.c_str()); }
+};

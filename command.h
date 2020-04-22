@@ -37,7 +37,7 @@ std::string CommandBase<T>::ToString()
 
 	for (auto iter = std::vector<T>::begin(); iter != std::vector<T>::end(); iter++)
 	{
-		commandStrList_ += StringConverter<T>::GetInstance()->ToString(*iter);
+		commandStrList_ += ToStringConverter<T>::GetInstance()->ToString(*iter);
 		commandStrList_ += " ";
 	}
 
