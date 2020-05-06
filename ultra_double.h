@@ -18,10 +18,15 @@ class UltraDouble
 public:
 	UltraDouble();
 	UltraDouble(int pFactor);
-	~UltraDouble(){}
-	// UltraDouble operator+(UltraDouble, UltraDouble);
+	~UltraDouble();
+	void Set(std::vector<double> dv);
+	UltraDouble operator+(UltraDouble&);
+	UltraDouble operator-(UltraDouble&);
+	UltraDouble operator*(UltraDouble&);
+	UltraDouble operator/(UltraDouble&);
 
 	// Conversion operator for display
+	std::string ToString();
 	operator const char* ();
 
 private:

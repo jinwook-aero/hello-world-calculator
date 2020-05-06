@@ -1,7 +1,14 @@
-#pragma once
+// stringCalculator.h
+// Header file for StringCalculator class
+//
+// Author: Sungwook Lee
+// First version: April 22, 2020
+// Last update  : April 22, 2020
+//
 
+#pragma once
 /* 
-	GetInstance() 함수가 있는 싱글턴 클래스를 만드는 매크로
+	Makes the class singleton
 */
 #define THIS_CLASS_IS_SINGLETON(className)				\
 	public:												\
@@ -20,7 +27,7 @@
 		void operator=(const className&& rhs) = delete;
 
 /*
-	문자열 매크로
+	Macro for character array
 */
 #define STRINGIFY_IMPL(x) #x
 #define STRINGIFY(x) STRINGIFY_IMPL(x)
