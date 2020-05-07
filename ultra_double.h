@@ -18,7 +18,7 @@ class UltraDouble
 public:
 	UltraDouble();
 	UltraDouble(int pFactor);
-	~UltraDouble();
+	~UltraDouble() = default;
 	void Set(std::vector<double> dv);
 	UltraDouble operator+(UltraDouble&);
 	UltraDouble operator-(UltraDouble&);

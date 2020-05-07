@@ -71,14 +71,14 @@ class ToStringConverter
 
 public:
 	// std::string& ToString(std::string& str) { return str; }
-	std::string ToString(const T& val);
+	std::string ToString(T val);
 
 private:
 	std::string ToString_iterate(const T& val);
 };
 
 template <typename T>
-std::string ToStringConverter<T>::ToString(const T& val)
+std::string ToStringConverter<T>::ToString(T val)
 {
 	if constexpr (is_string_v<T>)
 		return val;

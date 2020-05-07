@@ -124,7 +124,7 @@ int Calculator::DisplayStatus()
 	for (int i=0; i!=Calculator::sizeHistory; ++i)
 	{
 		std::cout << "CMD: " << cmdHistory[i].ToString() << std::endl;
-		std::cout << "ANS: " << ansHistory[i]            << std::endl;
+		std::cout << "ANS: " << ansHistory[i].ToString()  << std::endl;
 		std::cout << std::endl;
 	}
 	return 0;

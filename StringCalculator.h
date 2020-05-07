@@ -34,7 +34,7 @@ private:
 
 	// Bracket group is first determined to determine precedence
 	// Example command: 1 + ( 2 + ( 4 + 5 ) ) * ( 6 + 7 )
-	// Bracket group  : 0 0 - 1 1 - 2 2 2 - - 0 - 3 3 3 -
+	// Bracket group  : 0 0 1 1 1 2 2 2 2 2 1 0 3 3 3 3 3
 	std::vector<int> bracketGroupVec_;
 	int topBracketGroup_;
 	int precisionFactor_;
@@ -47,7 +47,6 @@ std::pair<bool, T> StringCalculator<T>::CalculateStr()
 	ParseStr();
 	if (IsValidForm() == false)
 		return std::make_pair(false, T{});
-	DetermineBracketGroup();
 	return std::make_pair(true, ComputeTopBracketGroup());
 }
 
@@ -55,24 +54,23 @@ std::pair<bool, T> StringCalculator<T>::CalculateStr()
 template<typename T>
 void StringCalculator<T>::ParseStr()
 {
-	std::string number;
+	std::string str;
 	cmdStrVec_.clear();
 	cmdTypeVec_.clear();
 
 	for (const char c : str_){
 		if (isdigit(c) || c == '.')
-			number.push_back(c);
+			str.push_back(c);
 		else
 		{
-			if (!number.empty()) {
-				cmdStrVec_.push_back(number);
+			if (!str.empty()) {
+				cmdStrVec_.push_back(str);
 				cmdTypeVec_.push_back(INPUT_CMD_TYPE::NUMBER);
 			}
-			number.clear();
+			str.clear();
 
 			if (IsArithmeticSign(c)) {
-
-				cmdStrVec_.push_back(std::string(&c));
+				cmdStrVec_.push_back(std::string(1,c));
 				switch (c) {
 				case '(':
 					cmdTypeVec_.push_back(INPUT_CMD_TYPE::OPEN_BRACKET);
@@ -99,8 +97,8 @@ void StringCalculator<T>::ParseStr()
 		}
 	}
 
-	if (!number.empty()) {
-		cmdStrVec_.push_back(number);
+	if (!str.empty()) {
+		cmdStrVec_.push_back(str);
 		cmdTypeVec_.push_back(INPUT_CMD_TYPE::NUMBER);
 	}
 }
@@ -149,10 +147,10 @@ template<typename T>
 void StringCalculator<T>::DetermineBracketGroup()
 {
 	// Bracket group is first determined before allocating precedence number
-	// Example command: 1 + ( 2 + ( 4 + 5 ) ) + 6
-	// Bracket group  : 0 0 - 1 1 - 2 2 2 - - 0 0
+	// Example command: 1 + ( 2 + ( 4 + 5 ) ) * ( 6 + 7 )
+	// Bracket group  : 0 0 1 1 1 2 2 2 2 2 1 0 3 3 3 3 3
 	int currentBracketGroup{ 0 };
-	bracketGroupVec_.clear();
+	bracketGroupVec_.clear(); bracketGroupVec_.resize(cmdTypeVec_.size(), 0);
 	for (unsigned int vecIndex = 0; vecIndex != cmdTypeVec_.size(); ++vecIndex)
 	{
 		if (cmdTypeVec_.at(vecIndex) == INPUT_CMD_TYPE::OPEN_BRACKET)
@@ -162,17 +160,10 @@ void StringCalculator<T>::DetermineBracketGroup()
 			for (unsigned int vecIndex2 = vecIndex; vecIndex2 != cmdTypeVec_.size(); ++vecIndex2)
 			{
 				if (cmdTypeVec_.at(vecIndex2) == INPUT_CMD_TYPE::OPEN_BRACKET)
-				{
 					++bracket2close;
-					bracketGroupVec_.at(vecIndex2) = -1;
-				}
 				else if (cmdTypeVec_.at(vecIndex2) == INPUT_CMD_TYPE::CLOSE_BRACKET)
-				{
 					--bracket2close;
-					bracketGroupVec_.at(vecIndex2) = -1;
-				}
-				else
-					bracketGroupVec_.at(vecIndex2) = currentBracketGroup;
+				bracketGroupVec_.at(vecIndex2) = currentBracketGroup;
 
 				if (!bracket2close)
 					break;
@@ -180,7 +171,11 @@ void StringCalculator<T>::DetermineBracketGroup()
 		}
 
 	}
-	topBracketGroup_ = *std::max_element(bracketGroupVec_.cbegin(), bracketGroupVec_.cend());
+	if (bracketGroupVec_.size())
+		topBracketGroup_ = *std::max_element(bracketGroupVec_.cbegin(), bracketGroupVec_.cend());
+	else
+		topBracketGroup_ = 0;
+
 
 	// Bracket group debug
 	for (std::vector<std::string>::const_iterator vecIndex = cmdStrVec_.cbegin(); vecIndex != cmdStrVec_.cend(); ++vecIndex)
@@ -200,6 +195,9 @@ void StringCalculator<T>::DetermineBracketGroup()
 template<typename T>
 T StringCalculator<T>::ComputeTopBracketGroup()
 {
+	// For each layer of call, bracket group is re-determined
+	DetermineBracketGroup();
+
 	// Local string vector at top bracket group
 	std::vector<std::string> localStrVec;
 	std::vector<INPUT_CMD_TYPE> localCmdTypeVec;
@@ -213,6 +211,7 @@ T StringCalculator<T>::ComputeTopBracketGroup()
 	// Compute along precedence
 	// Example str: 1 + 2 + 3 * 4 * 5 - 6 / 7
 	// Precedence :   4   5   1   2   6   3 
+	// After compuation, localStrVec = {"RESULT","\0","\0",...,"\0"}
 	for (INPUT_CMD_TYPE cmdType: {INPUT_CMD_TYPE::MULTIPLY, INPUT_CMD_TYPE::DIVIDE, INPUT_CMD_TYPE::PLUS, INPUT_CMD_TYPE::MINUS})
 	for (int i = 0; i != localStrVec.size(); ++i) {
 		if (localCmdTypeVec[i] == cmdType) {
@@ -220,16 +219,35 @@ T StringCalculator<T>::ComputeTopBracketGroup()
 			int iL, iR;
 			T lhs, rhs;
 			for (iL = i; iL >= 0; --iL)
-				if (localCmdTypeVec[iL] == INPUT_CMD_TYPE::NUMBER)
-					lhs = FromStringConverter<T>::GetInstance()->FromString(precisionFactor_,localStrVec[iL]);
+				if (localCmdTypeVec[iL] == INPUT_CMD_TYPE::NUMBER) {
+					lhs = FromStringConverter<T>::GetInstance()->FromString(precisionFactor_, localStrVec[iL]);
+					break;
+				}
 			for (iR = i; iR != localStrVec.size(); ++iR)
-				if (localCmdTypeVec[iR] == INPUT_CMD_TYPE::NUMBER)
+				if (localCmdTypeVec[iR] == INPUT_CMD_TYPE::NUMBER) {
 					rhs = FromStringConverter<T>::GetInstance()->FromString(precisionFactor_, localStrVec[iR]);
+					break;
+				}
 
 			// Update the localCmdTypeVec_ and localStrVec_
-			for (int ii = iL; ii < iR; ++i)
+			for (int ii = iL+1; ii <=iR; ++ii) {
+				localStrVec[ii] = std::string(1, 0);
 				localCmdTypeVec[ii] = INPUT_CMD_TYPE::COMPUTED;
-			localStrVec[iR] = ToStringConverter<T>::GetInstance()->ToString(Calculate(lhs, rhs, cmdType));
+			}
+			localStrVec[iL] = ToStringConverter<T>::GetInstance()->ToString(Calculate(lhs, rhs, cmdType));
+		}
+	}
+
+	// Remove the first OPEN_BRACKET if exists
+	if (localCmdTypeVec[0] == INPUT_CMD_TYPE::OPEN_BRACKET) {
+		// Shift result to first cell overriding bracket
+		localStrVec[0]     = localStrVec[1];
+		localCmdTypeVec[0] = INPUT_CMD_TYPE::NUMBER;
+
+		// Clear the other cells
+		for (int i = 1; i != localStrVec.size(); ++i) {
+			localStrVec[i]     = std::string(1, 0);
+			localCmdTypeVec[i] = INPUT_CMD_TYPE::COMPUTED;
 		}
 	}
 
@@ -241,11 +259,14 @@ T StringCalculator<T>::ComputeTopBracketGroup()
 		if (bracketGroupVec_[i] == topBracketGroup_) {
 			bracketGroupVec_[i]-=1; // Decremented by one
 			if (isFirstCell){
-				cmdStrVec_[i] = localStrVec.at(localStrVec.size());
+				cmdStrVec_[i]  = localStrVec.at(0);
+				cmdTypeVec_[i] = INPUT_CMD_TYPE::NUMBER;
 				isFirstCell = false;
 			}
-			else
+			else{
+				cmdStrVec_[i] = std::string(1, 0);
 				cmdTypeVec_[i] = INPUT_CMD_TYPE::COMPUTED;
+			}
 		}
 	}
 	topBracketGroup_ -= 1; // Top bracket group count decremented by one
@@ -253,7 +274,7 @@ T StringCalculator<T>::ComputeTopBracketGroup()
 	// Recursive call
 	if (topBracketGroup_ < 0)
 		return FromStringConverter<T>::GetInstance()->FromString(precisionFactor_, cmdStrVec_[0]);
-	ComputeTopBracketGroup();
+	return ComputeTopBracketGroup();
 }
 
 template<typename T>
