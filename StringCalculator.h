@@ -155,18 +155,19 @@ void StringCalculator<T>::DetermineBracketGroup()
 	// Bracket group is first determined before allocating precedence number
 	// Example command: 1 + ( 2 + ( 4 + 5 ) ) * ( 6 + 7 )
 	// Bracket group  : 0 0 1 1 1 2 2 2 2 2 1 0 3 3 3 3 3
-	uint32_t currentBracketGroup = 0;
+	int currentBracketGroup = 0;
 	bracketGroupVec_.clear(); 
 	bracketGroupVec_.resize(cmdTypeVec_.size(), 0);
 
-	for (size_t vecIndex = 0; vecIndex != cmdTypeVec_.size(); ++vecIndex)
+	for (int vecIndex = 0; vecIndex != cmdTypeVec_.size(); ++vecIndex)
 		if (cmdTypeVec_.at(vecIndex) == INPUT_CMD_TYPE::OPEN_BRACKET)
 		{
 			++currentBracketGroup;
-			uint32_t bracket2close = 1;
+			int bracket2close = 1;
+			bracketGroupVec_.at(vecIndex) = currentBracketGroup;
 
-			// in the bracket
-			for (vecIndex2 = vecIndex + 1; bracket2close != 0; ++vecIndex2)
+			// in bracket
+			for (int vecIndex2 = vecIndex + 1; bracket2close != 0; ++vecIndex2)
 			{
 				bracketGroupVec_.at(vecIndex2) = currentBracketGroup;
 
@@ -222,16 +223,20 @@ T StringCalculator<T>::ComputeTopBracketGroup()
 				// First identify the lhs and rhs
 				for (iL = i; iL >= 0; --iL)
 					if (localCmdTypeVec[iL] == INPUT_CMD_TYPE::NUMBER)
+					{
 						lhs = FromStringConverter<T>::GetInstance()->FromString(precisionFactor_, localStrVec[iL]);
 						break;
+					}
 
 				for (iR = i; iR != localStrVec.size(); ++iR)
 					if (localCmdTypeVec[iR] == INPUT_CMD_TYPE::NUMBER)
+					{
 						rhs = FromStringConverter<T>::GetInstance()->FromString(precisionFactor_, localStrVec[iR]);
 						break;
+					}
 
 				// Update the localCmdTypeVec_ and localStrVec_
-				for (int ii = iL+1; ii <=iR; ++ii) 
+				for (int ii = iL+1; ii <=iR; ++ii)
 				{
 					localStrVec[ii] = std::string(1, 0);
 					localCmdTypeVec[ii] = INPUT_CMD_TYPE::COMPUTED;
@@ -248,7 +253,7 @@ T StringCalculator<T>::ComputeTopBracketGroup()
 		localCmdTypeVec[0] = INPUT_CMD_TYPE::NUMBER;
 
 		// Clear the other cells
-		for (int i = 1; i < localStrVec.size(); ++i) 
+		for (size_t i = 1; i < localStrVec.size(); ++i)
 		{
 			localStrVec[i]     = std::string(1, 0);
 			localCmdTypeVec[i] = INPUT_CMD_TYPE::COMPUTED;
@@ -259,7 +264,7 @@ T StringCalculator<T>::ComputeTopBracketGroup()
 	// First cell is filled with computed number
 	// Other cells reallocated with COMPUTED TYPE
 	bool isFirstCell = true;
-	for (int i = 0; i != cmdStrVec_.size(); ++i)
+	for (size_t i = 0; i != cmdStrVec_.size(); ++i)
 		if (bracketGroupVec_[i] == topBracketGroup_)
 		{
 			bracketGroupVec_[i] -= 1; // Decremented by one
