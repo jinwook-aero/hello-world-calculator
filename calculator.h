@@ -40,12 +40,12 @@ public:
 	int Wait(int waitMilliseconds = 10);
 
 private:
-	std::deque<Command>     cmdHistory; // Command history
-	std::deque<UltraDouble> ansHistory; // Answer history
+	std::deque<Command>     cmdHistory_; // Command history
+	std::deque<UltraDouble> ansHistory_; // Answer history
 
-	Command cmdCurrent; // Current command 
-	UltraDouble ansCurrent; // Current answer
+	Command cmdCurrent_; // Current command 
+	UltraDouble ansCurrent_; // Current answer
 
-	int precisionFactor; // Amplification factor for significant digit beyond double precision
-	int sizeHistory; // Size of history to be recorded
+	int precisionFactor_; // Amplification factor for significant digit beyond double precision
+	int sizeHistory_; // Size of history to be recorded
 };
