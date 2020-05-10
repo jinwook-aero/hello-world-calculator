@@ -233,7 +233,7 @@ T StringCalculator<T>::ComputeTopBracketGroup()
 	// Example str: 1 - 2 + 3 * 4 * 5 - 6 / 7
 	// Precedence :   4   6   1   2   5   3 
 	// After compuation, localStrVec = {"RESULT","\0","\0",...,"\0"}
-	for (INPUT_CMD_TYPE cmdType: {INPUT_CMD_TYPE::MULTIPLY, INPUT_CMD_TYPE::DIVIDE, INPUT_CMD_TYPE::MINUS, INPUT_CMD_TYPE::PLUS})
+	for (INPUT_CMD_TYPE cmdType: {INPUT_CMD_TYPE::DIVIDE, INPUT_CMD_TYPE::MULTIPLY, INPUT_CMD_TYPE::MINUS, INPUT_CMD_TYPE::PLUS})
 		for (int i = 0; i < localStrVec.size(); ++i)
 			if (localCmdTypeVec[i] == cmdType) 
 			{
