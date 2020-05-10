@@ -132,9 +132,7 @@ public:
 	UltraDouble FromString(int precision, const std::string& str)
 	{
 		UltraDouble ud{ precision };
-		std::vector<double> dv(precision,0);
-		dv[0] = atof(str.c_str());
-		ud.Set(dv);
+		ud.Set(str);
 		return ud;
 	}
 };
