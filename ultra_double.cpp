@@ -265,20 +265,19 @@ int UltraDouble::CarryPull(std::vector<int8_t>& iv)
 		return 0; // returns order change 0
 }
 
+bool UltraDouble::IsZero(const UltraDouble& rhs) {
+	for (auto elem : rhs.udv_)
+		if (elem)
+			return false;
+	return true;
+}
+
 UltraDouble UltraDouble::operator+(const UltraDouble& rhs)
 {
 	// zero handling
-	bool isThisZero{ true };
-	bool isRhsZero{ true };
-	for (auto elem : this->udv_)
-		if (elem)
-			isThisZero = false;
-	for (auto elem : rhs.udv_)
-		if (elem)
-			isRhsZero = false;
-	if (isRhsZero)
+	if (IsZero(rhs))
 		return *this;
-	if (isThisZero)
+	if (IsZero(*this))
 		return rhs;
 
 	// sign operation
@@ -333,17 +332,9 @@ UltraDouble UltraDouble::operator+(const UltraDouble& rhs)
 UltraDouble UltraDouble::operator-(const UltraDouble& rhs)
 {
 	// zero handling
-	bool isThisZero{ true };
-	bool isRhsZero{  true };
-	for (auto elem : this->udv_)
-		if (elem)
-			isThisZero = false;
-	for (auto elem : rhs.udv_)
-		if (elem)
-			isRhsZero = false;
-	if (isRhsZero)
+	if (IsZero(rhs))
 		return *this;
-	if (isThisZero)
+	if (IsZero(*this))
 		return FlipSign(rhs);
 
 	// sign comparison

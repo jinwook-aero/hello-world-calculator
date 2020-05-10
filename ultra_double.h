@@ -56,4 +56,5 @@ private:
 	UltraDouble FlipSign(const UltraDouble& rhs); // Returns copy of rhs where sign is flipped
 	int CarryPush(std::vector<int8_t>& iv); // iv[i]>=10 is pushed, returns order change
 	int CarryPull(std::vector<int8_t>& iv); // iv[i]<0 is pulled, returns order change
+	bool IsZero(const UltraDouble& rhs); // Returns if zero
 };
