@@ -157,6 +157,10 @@ UltraDouble::operator const char* ()
 
 bool UltraDouble::operator==(const UltraDouble& rhs)
 {
+	// zero is equal to zero
+	if (IsZero(*this) && IsZero(rhs))
+		return true;
+
 	if (((this->sign_) == (rhs.sign_)) &&
 		((this->order_) == (rhs.order_))) {
 		int maxPrecision = (this->precisionFactor_ > rhs.precisionFactor_) ? this->precisionFactor_ : rhs.precisionFactor_;
@@ -174,6 +178,22 @@ bool UltraDouble::operator==(const UltraDouble& rhs)
 
 bool UltraDouble::operator<(const UltraDouble& rhs)
 {
+	// Comparison against zero is only based on sign
+	if (IsZero(*this) && IsZero(rhs))
+		return false;
+	else if (!IsZero(*this) && IsZero(rhs)){
+		if (this->sign_ < 0)
+			return true;
+		else
+			return false;
+	}
+	else if (IsZero(*this) && !IsZero(rhs)) {
+		if (rhs.sign_ > 0)
+			return true;
+		else
+			return false;
+	}
+	
 	// sign comparison --> equal positive sign will survive through
 	if ((this->sign_) < (rhs.sign_))
 		return true;
@@ -271,14 +291,23 @@ int UltraDouble::PullCarry(std::vector<int8_t>& iv)
 			carry = 1;
 			iv[i] += 10 * carry;
 		}
+		else
+			carry = 0;
 	}
-	if (!iv[0]) { // If the first digit is zero, decrement the order by 1
-		iv.erase(iv.begin());
+	int preZero = 0;
+	for (int i = 0; i != iv.size(); ++i)
+		if (iv[i])
+			break;
+		else
+			++preZero;
+	for (int i = 0; i != preZero; ++i)
 		iv.push_back(0);
-		return -1; // returns order change -1
-	}
-	else
-		return 0; // returns order change 0
+	iv.erase(iv.begin(),iv.begin()+preZero);
+	return (-preZero);
+}
+
+bool UltraDouble::IsValid(const UltraDouble& rhs) {
+	return validityFlag_;
 }
 
 bool UltraDouble::IsZero(const UltraDouble& rhs) {
@@ -290,6 +319,12 @@ bool UltraDouble::IsZero(const UltraDouble& rhs) {
 
 UltraDouble UltraDouble::operator+(const UltraDouble& rhs)
 {
+	// validity handling
+	if (!(IsValid(*this)&&IsValid(rhs))) {
+		UltraDouble ud{}; // Invalid output
+		return ud;
+	}
+
 	// zero handling
 	if (IsZero(rhs))
 		return *this;
@@ -347,6 +382,12 @@ UltraDouble UltraDouble::operator+(const UltraDouble& rhs)
 
 UltraDouble UltraDouble::operator-(const UltraDouble& rhs)
 {
+	// validity handling
+	if (!(IsValid(*this) && IsValid(rhs))) {
+		UltraDouble ud{}; // Invalid output
+		return ud;
+	}
+
 	// zero handling
 	if (IsZero(rhs))
 		return *this;
@@ -404,6 +445,12 @@ UltraDouble UltraDouble::operator-(const UltraDouble& rhs)
 
 UltraDouble UltraDouble::operator*(const UltraDouble& rhs)
 {
+	// validity handling
+	if (!(IsValid(*this) && IsValid(rhs))) {
+		UltraDouble ud{}; // Invalid output
+		return ud;
+	}
+
 	// zero handling
 	if (IsZero(rhs) || IsZero(*this)){
 		UltraDouble ud{ precisionFactor_ };
@@ -411,29 +458,80 @@ UltraDouble UltraDouble::operator*(const UltraDouble& rhs)
 	}
 
 	// Multiply is series of addition
-	UltraDouble SUM{ precisionFactor_ };
+	UltraDouble sum{ precisionFactor_ };
 	for (size_t iR = 0; iR != rhs.precisionFactor_; ++iR) {
 		int deltaOrder = rhs.order_ - iR;
 		UltraDouble lud = Absolute(PushOrder(*this, deltaOrder));
 		for (size_t iSum = 0; iSum != rhs.udv_[iR]; ++iSum){
-			SUM = SUM + lud;
+			sum = sum + lud;
 		}
 	}
 
 	// sign operation
 	int sign = 0;
 	if ((this->sign_) * (rhs.sign_) < 0) // different sign
-		return FlipSign(SUM);
+		return FlipSign(sum);
 	else // equal sign
-		return SUM;
+		return sum;
 }
 
 UltraDouble UltraDouble::operator/(const UltraDouble& rhs)
 {
-	// Temporary routine using only the first element
+	// validity handling
+	if (!(IsValid(*this) && IsValid(rhs))) {
+		UltraDouble ud{}; // Invalid output
+		return ud;
+	}
+
+	// zero handling
+	if (IsZero(*this)) {
+		UltraDouble ud{ precisionFactor_ };
+		return ud;
+	}
+	if (IsZero(rhs)) {
+		UltraDouble ud{}; // Invalid output
+		return ud;
+	}
+
+	// sign operation
+	int sign = 0;
+	if ((this->sign_) * (rhs.sign_) < 0) // different sign
+		--sign;
+	else // equal sign
+		++sign;
+
+	// order operation
+	UltraDouble lud = Absolute(*this);
+	UltraDouble rud = Absolute(rhs);
+	int order{ 0 };
+	while (lud > rud) {
+		++order;
+		lud = PushOrder(lud, -1);
+	}
+	while (lud < rud) {
+		--order;
+		lud = PushOrder(lud, +1);
+	}
+
+	// Sequentially determine quotient digits by testing from 0 to 9
+	std::vector<int8_t> quot(precisionFactor_);
+	int8_t test;
+	UltraDouble testDouble{ precisionFactor_ };
+	for (size_t iQ = 0; iQ != rhs.precisionFactor_; ++iQ) {
+		for (test = 1; test != 11; ++test) {
+			testDouble.Set(std::to_string(test));
+			if (lud < (rud * testDouble)) {
+				break;
+			}
+		}
+		quot[iQ] = --test;
+		testDouble.Set(std::to_string(test));
+		lud = lud - (rud * testDouble);
+		lud = PushOrder(lud, +1);
+	}
+
+	// Summary
 	UltraDouble ud{ precisionFactor_ };
-	std::vector<int8_t> dv(precisionFactor_, 0);
-	dv[0] = this->udv_[0] / rhs.udv_[0];
-	//ud.Set(dv);
+	ud.Set(sign, order, quot);
 	return ud;
 }

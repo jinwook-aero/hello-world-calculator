@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <iostream>
 
 // Number and arithmetic operation
 // Precision is directly read from calculator object
@@ -58,5 +59,6 @@ private:
 	UltraDouble PushOrder(const UltraDouble& rhs, int deltaOrder); // Returns copy of rhs where order is pushed by deltaOrder
 	int PushCarry(std::vector<int8_t>& iv); // iv[i]>=10 is pushed, returns order change
 	int PullCarry(std::vector<int8_t>& iv); // iv[i]<0 is pulled, returns order change
+	bool IsValid(const UltraDouble& rhs); // Returns validityFlag_
 	bool IsZero(const UltraDouble& rhs); // Returns if zero
 };
