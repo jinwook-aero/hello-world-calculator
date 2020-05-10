@@ -155,13 +155,6 @@ UltraDouble::operator const char* ()
 	return ToString().c_str();
 }
 
-UltraDouble UltraDouble::FlipSign(const UltraDouble& rhs)
-{
-	UltraDouble ud{ rhs };
-	ud.sign_ *= -1;
-	return ud;
-}
-
 bool UltraDouble::operator==(const UltraDouble& rhs)
 {
 	if (((this->sign_) == (rhs.sign_)) &&
@@ -225,16 +218,39 @@ bool UltraDouble::operator>=(const UltraDouble& rhs)
 	return ((*this > rhs) || (*this == rhs));
 }
 
-int UltraDouble::CarryPush(std::vector<int8_t>& iv)
+
+UltraDouble UltraDouble::FlipSign(const UltraDouble& rhs)
+{
+	UltraDouble ud{ rhs };
+	ud.sign_ *= -1;
+	return ud;
+}
+
+UltraDouble UltraDouble::Absolute(const UltraDouble& rhs)
+{
+	UltraDouble ud{ rhs };
+	ud.sign_ = 1;
+	return ud;
+}
+
+UltraDouble UltraDouble::PushOrder(const UltraDouble& rhs, int deltaOrder) {
+	UltraDouble ud{ rhs };
+	ud.order_ += deltaOrder;
+	return ud;
+}
+
+int UltraDouble::PushCarry(std::vector<int8_t>& iv)
 {
 	// iv[i]>=10 is pushed
 	int8_t carry{ 0 };
 	for (int i = (iv.size()-1); i >= 0; --i) {
 		iv[i] += carry;
-		if (iv[i] >= 10){
-			carry = iv[i]/10;
-			iv[i] -= 10* carry;
+		if (iv[i] >= 10) {
+			carry = iv[i] / 10;
+			iv[i] -= 10 * carry;
 		}
+		else
+			carry = 0;
 	}
 	if (carry) { // carry still left
 		iv.insert(iv.begin(), carry);
@@ -245,7 +261,7 @@ int UltraDouble::CarryPush(std::vector<int8_t>& iv)
 		return 0; // returns order change 0
 }
 
-int UltraDouble::CarryPull(std::vector<int8_t>& iv)
+int UltraDouble::PullCarry(std::vector<int8_t>& iv)
 {
 	// iv[i]<0 is pulled
 	int8_t carry{ 0 };
@@ -321,7 +337,7 @@ UltraDouble UltraDouble::operator+(const UltraDouble& rhs)
 	}
 
 	// Carry handling
-	int order = (this->order_) + CarryPush(dv);
+	int order = (this->order_) + PushCarry(dv);
 
 	// Target UltraDouble to be filled
 	UltraDouble ud{ precisionFactor_ };
@@ -378,7 +394,7 @@ UltraDouble UltraDouble::operator-(const UltraDouble& rhs)
 	}
 
 	// Carry handling
-	int order = (this->order_) + CarryPull(dv);
+	int order = (this->order_) + PullCarry(dv);
 
 	// Target UltraDouble to be filled
 	UltraDouble ud{ precisionFactor_ };
@@ -388,12 +404,28 @@ UltraDouble UltraDouble::operator-(const UltraDouble& rhs)
 
 UltraDouble UltraDouble::operator*(const UltraDouble& rhs)
 {
-	// Temporary routine using only the first element
-	UltraDouble ud{ precisionFactor_ };
-	std::vector<int8_t> dv(precisionFactor_, 0);
-	dv[0] = this->udv_[0] * rhs.udv_[0];
-	//ud.Set(dv);
-	return ud;
+	// zero handling
+	if (IsZero(rhs) || IsZero(*this)){
+		UltraDouble ud{ precisionFactor_ };
+		return ud;
+	}
+
+	// Multiply is series of addition
+	UltraDouble SUM{ precisionFactor_ };
+	for (size_t iR = 0; iR != rhs.precisionFactor_; ++iR) {
+		int deltaOrder = rhs.order_ - iR;
+		UltraDouble lud = Absolute(PushOrder(*this, deltaOrder));
+		for (size_t iSum = 0; iSum != rhs.udv_[iR]; ++iSum){
+			SUM = SUM + lud;
+		}
+	}
+
+	// sign operation
+	int sign = 0;
+	if ((this->sign_) * (rhs.sign_) < 0) // different sign
+		return FlipSign(SUM);
+	else // equal sign
+		return SUM;
 }
 
 UltraDouble UltraDouble::operator/(const UltraDouble& rhs)

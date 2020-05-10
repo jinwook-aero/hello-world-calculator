@@ -54,7 +54,9 @@ private:
 
 	// Private functions
 	UltraDouble FlipSign(const UltraDouble& rhs); // Returns copy of rhs where sign is flipped
-	int CarryPush(std::vector<int8_t>& iv); // iv[i]>=10 is pushed, returns order change
-	int CarryPull(std::vector<int8_t>& iv); // iv[i]<0 is pulled, returns order change
+	UltraDouble Absolute(const UltraDouble& rhs); // Returns copy of rhs where sign is always positive
+	UltraDouble PushOrder(const UltraDouble& rhs, int deltaOrder); // Returns copy of rhs where order is pushed by deltaOrder
+	int PushCarry(std::vector<int8_t>& iv); // iv[i]>=10 is pushed, returns order change
+	int PullCarry(std::vector<int8_t>& iv); // iv[i]<0 is pulled, returns order change
 	bool IsZero(const UltraDouble& rhs); // Returns if zero
 };

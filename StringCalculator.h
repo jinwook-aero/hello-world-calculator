@@ -223,8 +223,8 @@ T StringCalculator<T>::ComputeTopBracketGroup()
 		}
 
 	// If first element is '+' or '-', 0 is added at the front
-	if ((cmdTypeVec_[0] == INPUT_CMD_TYPE::PLUS) ||
-		(cmdTypeVec_[0] == INPUT_CMD_TYPE::MINUS)) {
+	if ((localCmdTypeVec[0] == INPUT_CMD_TYPE::PLUS) ||
+		(localCmdTypeVec[0] == INPUT_CMD_TYPE::MINUS)) {
 		localStrVec.insert(localStrVec.begin(),"0");
 		localCmdTypeVec.insert(localCmdTypeVec.begin(), INPUT_CMD_TYPE::NUMBER);
 	}
