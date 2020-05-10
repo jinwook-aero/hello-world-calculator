@@ -225,9 +225,9 @@ bool UltraDouble::operator>=(const UltraDouble& rhs)
 	return ((*this > rhs) || (*this == rhs));
 }
 
-int UltraDouble::CarryHandling(std::vector<int8_t>& iv)
+int UltraDouble::CarryPush(std::vector<int8_t>& iv)
 {
-	// iv[i]>10 is handed over forward
+	// iv[i]>=10 is pushed
 	int8_t carry{ 0 };
 	for (int i = (iv.size()-1); i >= 0; --i) {
 		iv[i] += carry;
@@ -245,16 +245,36 @@ int UltraDouble::CarryHandling(std::vector<int8_t>& iv)
 		return 0; // returns order change 0
 }
 
+int UltraDouble::CarryPull(std::vector<int8_t>& iv)
+{
+	// iv[i]<0 is pulled
+	int8_t carry{ 0 };
+	for (int i = (iv.size() - 1); i >= 0; --i) {
+		iv[i] -= carry;
+		if (iv[i] < 0) {
+			carry = 1;
+			iv[i] += 10 * carry;
+		}
+	}
+	if (!iv[0]) { // If the first digit is zero, decrement the order by 1
+		iv.erase(iv.begin());
+		iv.push_back(0);
+		return -1; // returns order change -1
+	}
+	else
+		return 0; // returns order change 0
+}
+
 UltraDouble UltraDouble::operator+(const UltraDouble& rhs)
 {
 	// sign operation
 	int sign = 0;
 	if ((this->sign_) * (rhs.sign_) < 0) { // different sign
-		// a+(-b) is a-b
+		// a+b is a-(-b)
 		if ((rhs.sign_) < 0)
 			return (*this - FlipSign(rhs));
 
-		// -a+b is b-a
+		// a+b is b-(-a)
 		if ((this->sign_) < 0) {
 			UltraDouble ud{ rhs };
 			return (ud - FlipSign(*this));
@@ -288,7 +308,7 @@ UltraDouble UltraDouble::operator+(const UltraDouble& rhs)
 	}
 
 	// Carry handling
-	int order = (this->order_) + CarryHandling(dv);
+	int order = (this->order_) + CarryPush(dv);
 
 	// Target UltraDouble to be filled
 	UltraDouble ud{ precisionFactor_ };
@@ -298,11 +318,52 @@ UltraDouble UltraDouble::operator+(const UltraDouble& rhs)
 
 UltraDouble UltraDouble::operator-(const UltraDouble& rhs)
 {
-	// Temporary routine using only the first element
-	UltraDouble ud{ precisionFactor_ };
+	// sign comparison
+	if ((this->sign_) * (rhs.sign_) < 0) { // different sign
+		// a-b is a+(-b)
+		if ((rhs.sign_) < 0)
+			return (*this + FlipSign(rhs));
+
+		// a-b is -((-a)+b)
+		if ((this->sign_) < 0) {
+			UltraDouble ud{ rhs };
+			return FlipSign((FlipSign(*this) + ud));
+		}
+	}
+	else { // equal sign
+		// a-b is (-b)-(-a)
+		if ((this->sign_) < 0){
+			UltraDouble ud{ rhs };
+			return (FlipSign(ud) - (FlipSign(*this)));
+		}
+	}
+
+	// order shifting such that *this is always larger
+	if (*this < rhs) {
+		UltraDouble ud{ rhs };
+		return FlipSign(ud - *this);
+	}
+	int rhsOrderShift = this->order_ - rhs.order_;
+	int sign = 1; // Result is always positive
+
+	// First - operation
 	std::vector<int8_t> dv(precisionFactor_, 0);
-	dv[0] = this->udv_[0] - rhs.udv_[0];
-	//ud.Set(dv);
+	int8_t rv{ 0 }; size_t rvIter{ 0 };
+	for (size_t i = 0; i != precisionFactor_; ++i) {
+		rvIter = i - rhsOrderShift;
+		if ((rvIter >= 0) && (rvIter < rhs.udv_.size()))
+			rv = rhs.udv_[i - rhsOrderShift];
+		else
+			rv = 0;
+		dv[i] = (this->udv_[i]) - rv;
+	}
+
+	// Carry handling
+	int order = (this->order_) + CarryPull(dv);
+
+	// Target UltraDouble to be filled
+	UltraDouble ud{ precisionFactor_ };
+	ud.Set(sign, order, dv);
 	return ud;
 }
 

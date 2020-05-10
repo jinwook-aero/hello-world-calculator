@@ -149,10 +149,11 @@ bool StringCalculator<T>::IsValidForm()
 	// First '+' or '-' right after '(' is part of number
 	for (auto cmdTypeIter = cmdTypeVec_.cbegin(); cmdTypeIter != cmdTypeVec_.cend(); ++cmdTypeIter)
 	{
-		if (*cmdTypeIter == INPUT_CMD_TYPE::OPEN_BRACKET)
+		if (*cmdTypeIter == INPUT_CMD_TYPE::OPEN_BRACKET){
 			if (*(cmdTypeIter + 1) == INPUT_CMD_TYPE::PLUS ||
 				*(cmdTypeIter + 1) == INPUT_CMD_TYPE::MINUS)
 				--signCnt;
+		}
 	}
 
 	// Sign cnt
@@ -200,15 +201,6 @@ void StringCalculator<T>::DetermineBracketGroup()
 		topBracketGroup_ = *std::max_element(bracketGroupVec_.begin(), bracketGroupVec_.end());
 	else
 		topBracketGroup_ = 0;
-
-	// Bracket group debug
-	for (const auto& cmdStr : cmdStrVec_)
-		std::cout << cmdStr << " ";
-	std::cout << std::endl;
-
-	for (const auto& bracketGroup : bracketGroupVec_)
-		std::cout << bracketGroup << " ";
-	std::cout << std::endl;
 }
 
 template<typename T>
@@ -238,10 +230,10 @@ T StringCalculator<T>::ComputeTopBracketGroup()
 	}
 
 	// Compute along precedence
-	// Example str: 1 + 2 + 3 * 4 * 5 - 6 / 7
-	// Precedence :   4   5   1   2   6   3 
+	// Example str: 1 - 2 + 3 * 4 * 5 - 6 / 7
+	// Precedence :   4   6   1   2   5   3 
 	// After compuation, localStrVec = {"RESULT","\0","\0",...,"\0"}
-	for (INPUT_CMD_TYPE cmdType: {INPUT_CMD_TYPE::MULTIPLY, INPUT_CMD_TYPE::DIVIDE, INPUT_CMD_TYPE::PLUS, INPUT_CMD_TYPE::MINUS})
+	for (INPUT_CMD_TYPE cmdType: {INPUT_CMD_TYPE::MULTIPLY, INPUT_CMD_TYPE::DIVIDE, INPUT_CMD_TYPE::MINUS, INPUT_CMD_TYPE::PLUS})
 		for (int i = 0; i < localStrVec.size(); ++i)
 			if (localCmdTypeVec[i] == cmdType) 
 			{
