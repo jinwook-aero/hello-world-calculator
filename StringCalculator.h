@@ -141,8 +141,26 @@ bool StringCalculator<T>::IsValidForm()
 	if (openBracketCnt != closeBracketCnt)
 		return false;
 
+	// First '+' or '-' is part of number
+	if (cmdTypeVec_[0] == INPUT_CMD_TYPE::PLUS ||
+		cmdTypeVec_[0] == INPUT_CMD_TYPE::MINUS)
+		--signCnt;
+
+	// First '+' or '-' right after '(' is part of number
+	for (auto cmdTypeIter = cmdTypeVec_.cbegin(); cmdTypeIter != cmdTypeVec_.cend(); ++cmdTypeIter)
+	{
+		if (*cmdTypeIter == INPUT_CMD_TYPE::OPEN_BRACKET)
+			if (*(cmdTypeIter + 1) == INPUT_CMD_TYPE::PLUS ||
+				*(cmdTypeIter + 1) == INPUT_CMD_TYPE::MINUS)
+				--signCnt;
+	}
+
 	// Sign cnt
 	if (numberCnt != signCnt + 1)
+		return false;
+
+	// number cnt
+	if (!numberCnt)
 		return false;
 	
 	return true;
@@ -199,15 +217,25 @@ T StringCalculator<T>::ComputeTopBracketGroup()
 	// For each layer of call, bracket group is re-determined
 	DetermineBracketGroup();
 
-	// Local string vector at top bracket group
+	// Local string vector at top bracket group, but without brackets
 	std::vector<std::string> localStrVec;
 	std::vector<INPUT_CMD_TYPE> localCmdTypeVec;
 	for (int i = 0; i < cmdStrVec_.size(); ++i)
 		if (bracketGroupVec_[i] == topBracketGroup_) 
 		{
-			localStrVec.push_back(cmdStrVec_[i]);
-			localCmdTypeVec.push_back(cmdTypeVec_[i]);
+			if ((cmdTypeVec_[i] != INPUT_CMD_TYPE::OPEN_BRACKET) &&
+				(cmdTypeVec_[i] != INPUT_CMD_TYPE::CLOSE_BRACKET)){
+				localStrVec.push_back(cmdStrVec_[i]);
+				localCmdTypeVec.push_back(cmdTypeVec_[i]);
+			}
 		}
+
+	// If first element is '+' or '-', 0 is added at the front
+	if ((cmdTypeVec_[0] == INPUT_CMD_TYPE::PLUS) ||
+		(cmdTypeVec_[0] == INPUT_CMD_TYPE::MINUS)) {
+		localStrVec.insert(localStrVec.begin(),"0");
+		localCmdTypeVec.insert(localCmdTypeVec.begin(), INPUT_CMD_TYPE::NUMBER);
+	}
 
 	// Compute along precedence
 	// Example str: 1 + 2 + 3 * 4 * 5 - 6 / 7
@@ -244,21 +272,6 @@ T StringCalculator<T>::ComputeTopBracketGroup()
 
 				localStrVec[iL] = ToStringConverter<T>::GetInstance()->ToString(Calculate(lhs, rhs, cmdType));
 			}
-
-	// Remove the first OPEN_BRACKET if exists
-	if (localCmdTypeVec[0] == INPUT_CMD_TYPE::OPEN_BRACKET) 
-	{
-		// Shift result to first cell overriding bracket
-		localStrVec[0]     = localStrVec[1];
-		localCmdTypeVec[0] = INPUT_CMD_TYPE::NUMBER;
-
-		// Clear the other cells
-		for (size_t i = 1; i < localStrVec.size(); ++i)
-		{
-			localStrVec[i]     = std::string(1, 0);
-			localCmdTypeVec[i] = INPUT_CMD_TYPE::COMPUTED;
-		}
-	}
 
 	// Update the top bracket group with result
 	// First cell is filled with computed number

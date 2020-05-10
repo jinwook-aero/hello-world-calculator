@@ -19,9 +19,16 @@ class UltraDouble
 public:
 	UltraDouble();
 	UltraDouble(int pFactor);
+	UltraDouble(const UltraDouble & ud);
 	~UltraDouble() = default;
 	void Set(std::string str);
-	const std::vector<int8_t> Get() const;
+	void Set(int sign, int order, std::vector<int8_t> udv);
+	std::string Get();
+	bool operator==(const UltraDouble&);
+	bool operator<(const UltraDouble&);
+	bool operator>(const UltraDouble&);
+	bool operator<=(const UltraDouble&);
+	bool operator>=(const UltraDouble&);
 	UltraDouble operator+(const UltraDouble&);
 	UltraDouble operator-(const UltraDouble&);
 	UltraDouble operator*(const UltraDouble&);
@@ -44,4 +51,8 @@ private:
 	int precisionFactor_;
 	std::vector<int8_t> udv_; // Ultra precision value represented as integer vector
 	std::string udv_str_; // Ultra precision value in string for display
+
+	// Private functions
+	UltraDouble FlipSign(const UltraDouble& rhs); // Returns copy of rhs where sign is flipped
+	int CarryHandling(std::vector<int8_t>& iv); // iv[i]>10 is handed over forward, returns order change
 };
