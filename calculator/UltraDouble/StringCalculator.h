@@ -202,7 +202,7 @@ T StringCalculator<T>::ComputeTopBracketGroup()
 	// Local string vector at top bracket group
 	std::vector<std::string> localStrVec;
 	std::vector<INPUT_CMD_TYPE> localCmdTypeVec;
-	for (int i = 0; i < cmdStrVec_.size(); ++i)
+	for (size_t i = 0; i < cmdStrVec_.size(); ++i)
 		if (bracketGroupVec_[i] == topBracketGroup_) 
 		{
 			localStrVec.push_back(cmdStrVec_[i]);
@@ -214,10 +214,10 @@ T StringCalculator<T>::ComputeTopBracketGroup()
 	// Precedence :   4   5   1   2   6   3 
 	// After compuation, localStrVec = {"RESULT","\0","\0",...,"\0"}
 	for (INPUT_CMD_TYPE cmdType: {INPUT_CMD_TYPE::MULTIPLY, INPUT_CMD_TYPE::DIVIDE, INPUT_CMD_TYPE::PLUS, INPUT_CMD_TYPE::MINUS})
-		for (int i = 0; i < localStrVec.size(); ++i)
+		for (size_t i = 0; i < localStrVec.size(); ++i)
 			if (localCmdTypeVec[i] == cmdType) 
 			{
-				int iL, iR;
+				size_t iL, iR;
 				T lhs, rhs;
 
 				// First identify the lhs and rhs
@@ -236,7 +236,7 @@ T StringCalculator<T>::ComputeTopBracketGroup()
 					}
 
 				// Update the localCmdTypeVec_ and localStrVec_
-				for (int ii = iL+1; ii <=iR; ++ii)
+				for (size_t ii = iL+1; ii <=iR; ++ii)
 				{
 					localStrVec[ii] = std::string(1, 0);
 					localCmdTypeVec[ii] = INPUT_CMD_TYPE::COMPUTED;

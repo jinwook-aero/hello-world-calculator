@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="ultra_double.cpp">
+      <Filter>ultraDouble</Filter>
+    </ClCompile>
+    <ClCompile Include="calculator.cpp">
+      <Filter>calculator</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ultra_double.h">
+      <Filter>ultraDouble</Filter>
+    </ClInclude>
+    <ClInclude Include="calculator.h">
+      <Filter>calculator</Filter>
+    </ClInclude>
+    <ClInclude Include="command.h">
+      <Filter>calculator</Filter>
+    </ClInclude>
+    <ClInclude Include="StringCalculator.h">
+      <Filter>calculator</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="ultraDouble">
+      <UniqueIdentifier>{fd425adf-290b-4347-a130-dcf54407d45e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="calculator">
+      <UniqueIdentifier>{9c8eaeb3-8573-424d-9c52-409a4a4f13f5}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

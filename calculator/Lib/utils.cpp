@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "utils.h"
 
 bool IsArithmeticSign(const char c)
