@@ -19,11 +19,11 @@
 // Calculator constructor
 // clear and properly size cmdHistory and ansHistory
 Calculator::Calculator(int pFactor, int nHistory):
-	precisionFactor(pFactor),
-	sizeHistory(nHistory)
+	precisionFactor_(pFactor),
+	sizeHistory_(nHistory)
 {
-	cmdHistory.clear(); cmdHistory.resize(sizeHistory,Command());
-	ansHistory.clear(); ansHistory.resize(sizeHistory,UltraDouble());
+	cmdHistory_.clear(); cmdHistory_.resize(sizeHistory_,Command());
+	ansHistory_.clear(); ansHistory_.resize(sizeHistory_,UltraDouble());
 }
 
 // INPUT_CMD_TYPE Calculator::ReadCommand()
@@ -42,7 +42,7 @@ INPUT_CMD_TYPE Calculator::ReadCommand()
 	// until EXIT or EXECUTE is entered
 	// CLEAR or ALL_CLEAR performs local action
 	std::string tempStr{""};
-	cmdCurrent.Clear(); // Clear current command object
+	cmdCurrent_.Clear(); // Clear current command object
 	INPUT_CMD_TYPE input_cmd_type = INPUT_CMD_TYPE::UNDETERMINED;
 	while ( (input_cmd_type != INPUT_CMD_TYPE::EXECUTE) &&
 		    (input_cmd_type != INPUT_CMD_TYPE::EXIT) )
@@ -64,32 +64,32 @@ INPUT_CMD_TYPE Calculator::ReadCommand()
 		else if (tempStr == "CLEAR")
 		{
 			input_cmd_type = INPUT_CMD_TYPE::CLEAR;
-			cmdCurrent.Clear(); // Clear only current command object
+			cmdCurrent_.Clear(); // Clear only current command object
 		}
 		else if (tempStr == "ALL_CLEAR")
 		{
 			input_cmd_type = INPUT_CMD_TYPE::ALL_CLEAR;
 			// NOTE: without .clear(), cmdHistory still holds previous data
 			// To Sungwook: Figure out why and fix this issue such that .clear() does not need to be invoked
-			cmdHistory.clear(); cmdHistory.resize(sizeHistory, Command()); // Clear and reinitialize command history
-			ansHistory.clear(); ansHistory.resize(sizeHistory, UltraDouble()); // Clear and reinitialize  answer history			
+			cmdHistory_.clear(); cmdHistory_.resize(sizeHistory_, Command()); // Clear and reinitialize command history
+			ansHistory_.clear(); ansHistory_.resize(sizeHistory_, UltraDouble()); // Clear and reinitialize  answer history			
 		}
 		else if (tempStr == "BACKSPACE")
 		{
 			input_cmd_type = INPUT_CMD_TYPE::BACKSPACE;
-			cmdCurrent.Pop_back(); // Delete the most recent command element
+			cmdCurrent_.Pop_back(); // Delete the most recent command element
 		}
 		else // NUMBER or OPERATOR, temporarilly assigned with UNDETERMINED
 			input_cmd_type = INPUT_CMD_TYPE::UNDETERMINED;
 		
 		// Append command only for number or operator
 		if (input_cmd_type == INPUT_CMD_TYPE::UNDETERMINED)
-			cmdCurrent.Append(tempStr);
+			cmdCurrent_.Append(tempStr);
 	}
 
 	// Update cmdHistory and pop the oldest history data
-	cmdHistory.push_back(cmdCurrent);
-	cmdHistory.pop_front();
+	cmdHistory_.push_back(cmdCurrent_);
+	cmdHistory_.pop_front();
 
 	// Return INPUT_CMD_TYPE
 	return input_cmd_type;
@@ -104,15 +104,15 @@ INPUT_CMD_TYPE Calculator::ReadCommand()
 int Calculator::ExecuteCommand()
 {
 	// Compute string
-	StringCalculator<UltraDouble> localCalculator{ precisionFactor, cmdCurrent.ToString() };
+	StringCalculator<UltraDouble> localCalculator{ precisionFactor_, cmdCurrent_.ToString() };
 	std::pair<bool, UltraDouble> result{localCalculator.CalculateStr()};
 	
 	// Update ans history
 	if (result.first)
-		ansHistory.push_back(result.second);
+		ansHistory_.push_back(result.second);
 	else
-		ansHistory.push_back(0);
-	ansHistory.pop_front();
+		ansHistory_.push_back(0);
+	ansHistory_.pop_front();
 	return 0;
 }
 
@@ -121,10 +121,10 @@ int Calculator::ExecuteCommand()
 int Calculator::DisplayStatus()
 {
 	system("CLS");
-	for (int i=0; i!=Calculator::sizeHistory; ++i)
+	for (int i=0; i!=Calculator::sizeHistory_; ++i)
 	{
-		std::cout << "CMD: " << cmdHistory[i].ToString() << std::endl;
-		std::cout << "ANS: " << ansHistory[i].ToString()  << std::endl;
+		std::cout << "CMD: " << cmdHistory_[i].ToString() << std::endl;
+		std::cout << "ANS: " << ansHistory_[i].ToString()  << std::endl;
 		std::cout << std::endl;
 	}
 	return 0;
